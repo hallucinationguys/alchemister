@@ -1,0 +1,29 @@
+# Build artifacts
+.next/
+build/
+dist/
+out/
+public/
+
+# Dependencies
+node_modules/
+
+# Misc
+.DS_Store
+*.log
+coverage/
+.cache/
+.vercel
+.env*
+!.env.example
+
+# Ignore SVG and ICO files
+**/*.svg
+**/*.ico
+
+# Other common directories
+__snapshots__/
+pnpm-lock.yaml
+package.json
+
+src/components/ui/
