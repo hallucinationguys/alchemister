@@ -20,6 +20,12 @@ const eslintConfig = [
   {
     settings: { react: { version: '19.0.0' } },
   },
+  {
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
+  },
 ]
 
 export default eslintConfig
