@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { buttonVariants } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/contexts/auth-provider'
 
 const sidebarNavItems = [
   {
@@ -18,6 +19,7 @@ const sidebarNavItems = [
 
 export function SettingsSidebarNav() {
   const pathname = usePathname()
+  const { logout } = useAuth()
 
   return (
     <nav className="flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1">
@@ -36,6 +38,9 @@ export function SettingsSidebarNav() {
           {item.title}
         </Link>
       ))}
+      <Button variant="ghost" onClick={logout} className="justify-start hover:underline">
+        Log out
+      </Button>
     </nav>
   )
 }

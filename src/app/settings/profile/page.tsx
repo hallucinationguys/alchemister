@@ -148,9 +148,6 @@ export default function ProfilePage() {
 
         <div className="flex space-x-2">
           <Button type="submit">Update profile</Button>
-          <Button variant="destructive" onClick={logout}>
-            Logout
-          </Button>
         </div>
       </form>
     </div>
