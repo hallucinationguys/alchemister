@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { useAuth } from '@/contexts/auth-provider'
 
 export default function VerifyClientComponent() {
   const searchParams = useSearchParams()
-  const router = useRouter()
+  const { login } = useAuth()
   const token = searchParams.get('token')
   const [verificationStatus, setVerificationStatus] = useState('verifying')
   const [errorMessage, setErrorMessage] = useState('')
@@ -33,9 +34,8 @@ export default function VerifyClientComponent() {
         }
 
         if (data.data.access_token) {
-          localStorage.setItem('access_token', data.data.access_token)
           setVerificationStatus('success')
-          router.push('/dashboard')
+          login(data.data.access_token)
         } else {
           throw new Error('No access token received.')
         }
@@ -50,7 +50,7 @@ export default function VerifyClientComponent() {
     }
 
     verifyToken()
-  }, [token, router])
+  }, [token, login])
 
   return (
     <div className="flex items-center justify-center min-h-screen">
