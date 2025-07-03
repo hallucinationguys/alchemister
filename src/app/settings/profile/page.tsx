@@ -6,30 +6,20 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/contexts/auth-provider'
-
-interface User {
-  id: string
-  email: string
-  email_verified: boolean
-  first_name: string | null
-  last_name: string | null
-  avatar_url: string | null
-  full_name: string
-  display_name: string
-  is_active: boolean
-  created_at: string
-  updated_at: string
-}
+import { useProfile } from '../hooks'
+import type { UserResponse } from '../types'
 
 export default function ProfilePage() {
   const { token, loading: authLoading, logout } = useAuth()
-  const [user, setUser] = useState<User | null>(null)
+  const { updateProfile, loading: updateLoading, error: updateError } = useProfile()
+  const [user, setUser] = useState<UserResponse | null>(null)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchProfile() {
@@ -77,12 +67,29 @@ export default function ProfilePage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, value } = e.target
     setFormData(prevState => ({ ...prevState, [id]: value }))
+    // Clear messages when user starts typing
+    setSuccessMessage(null)
+    setError(null)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement API call to update profile
-    console.log('Profile updated with:', formData)
+    setSuccessMessage(null)
+    setError(null)
+
+    try {
+      const updatedUser = await updateProfile({
+        first_name: formData.firstName || undefined,
+        last_name: formData.lastName || undefined,
+      })
+
+      if (updatedUser) {
+        setUser(updatedUser)
+        setSuccessMessage('Profile updated successfully!')
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to update profile')
+    }
   }
 
   if (loading || authLoading) {
@@ -113,8 +120,8 @@ export default function ProfilePage() {
     )
   }
 
-  if (error) {
-    return <div>{error}</div>
+  if (error && !user) {
+    return <div className="text-destructive">{error}</div>
   }
 
   if (!user) {
@@ -129,6 +136,21 @@ export default function ProfilePage() {
           This is how others will see you on the site.
         </p>
       </div>
+
+      {/* Success Message */}
+      {successMessage && (
+        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+          <p className="text-green-800 text-sm">{successMessage}</p>
+        </div>
+      )}
+
+      {/* Error Message */}
+      {(error || updateError) && (
+        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
+          <p className="text-destructive text-sm">{error || updateError}</p>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -138,16 +160,28 @@ export default function ProfilePage() {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="firstName">First Name</Label>
-            <Input id="firstName" value={formData.firstName} onChange={handleInputChange} />
+            <Input
+              id="firstName"
+              value={formData.firstName}
+              onChange={handleInputChange}
+              disabled={updateLoading}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="lastName">Last Name</Label>
-            <Input id="lastName" value={formData.lastName} onChange={handleInputChange} />
+            <Input
+              id="lastName"
+              value={formData.lastName}
+              onChange={handleInputChange}
+              disabled={updateLoading}
+            />
           </div>
         </div>
 
         <div className="flex space-x-2">
-          <Button type="submit">Update profile</Button>
+          <Button type="submit" disabled={updateLoading}>
+            {updateLoading ? 'Updating...' : 'Update profile'}
+          </Button>
         </div>
       </form>
     </div>

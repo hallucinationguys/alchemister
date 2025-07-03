@@ -15,6 +15,10 @@ const sidebarNavItems = [
     title: 'Appearance',
     href: '/settings/appearance',
   },
+  {
+    title: 'Model Providers',
+    href: '/settings/model-providers',
+  },
 ]
 
 export function SettingsSidebarNav() {
