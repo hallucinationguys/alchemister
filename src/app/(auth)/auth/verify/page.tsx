@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import VerifyClientComponent from './VerifyClientComponent'
-import AuthLayout from '../AuthLayout'
+import AuthLayout from '../../AuthLayout'
 import { LoaderCircle } from 'lucide-react'
 
 function VerificationFallback() {

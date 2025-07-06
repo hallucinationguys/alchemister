@@ -84,7 +84,7 @@ export default function VerifyClientComponent() {
             <p className="text-muted-foreground">{errorMessage}</p>
           </div>
           <Button asChild className="w-full">
-            <Link href="/auth">Go back to login</Link>
+            <Link href="/login">Go back to login</Link>
           </Button>
         </>
       )}

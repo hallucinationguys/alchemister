@@ -21,7 +21,7 @@ const AuthContext = createContext<AuthContextType>({
 
 export const useAuth = () => useContext(AuthContext)
 
-const publicPaths = ['/auth']
+const publicPaths = ['/login']
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>(null)
@@ -40,7 +40,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = useCallback(() => {
     localStorage.removeItem('access_token')
     setToken(null)
-    router.push('/auth')
+    router.push('/login')
   }, [router])
 
   useEffect(() => {
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = (newToken: string) => {
     localStorage.setItem('access_token', newToken)
     setToken(newToken)
-    router.push('/dashboard')
+    router.push('/')
   }
 
   const value = {
