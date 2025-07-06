@@ -1,12 +1,9 @@
-'use client'
-
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SidebarInset } from '@/components/ui/sidebar'
-import ChatHeader from '../chat/chat-header'
-import MessageList from '../chat/message-list'
-import MessageInput from '../chat/message-input'
-import ApiKeyError from '../chat/api-key-error'
+import ChatHeader from '../chat/ChatHeader'
+import MessageList from '../chat/MessageList'
+import MessageInput from '../chat/MessageInput'
 import { useAvailableModels } from '../../hooks/use-available-models'
 import { useState, useEffect } from 'react'
 import type { Message } from '../../types/conversation'
@@ -86,21 +83,6 @@ const ChatContainer = ({
           onModelChange={handleModelChange}
           disabled={modelsLoading || inputDisabled}
         />
-
-        {/* Error state */}
-        <div className="flex flex-1 items-center justify-center p-6">
-          <div className="w-full max-w-lg">
-            <ApiKeyError error={error} onRetry={onRetry} className="mb-4" />
-            {onBackClick && (
-              <div className="text-center mt-4">
-                <Button variant="ghost" size="sm" onClick={onBackClick}>
-                  <ArrowLeft className="size-4 mr-2" />
-                  Back to Chat
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
       </SidebarInset>
     )
   }

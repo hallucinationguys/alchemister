@@ -1,5 +1,3 @@
-'use client'
-
 import { AlertCircle } from 'lucide-react'
 import {
   Sidebar,
@@ -12,8 +10,8 @@ import {
 } from '@/components/ui/sidebar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import ConversationList from './conversation-list'
-import NewChatButton from './new-chat-button'
+import ConversationList from './ConversationList'
+import NewChatButton from './NewChatButton'
 import { Settings } from 'lucide-react'
 import type { ConversationSummaryResponse } from '../../types/conversation'
 import { useRouter } from 'next/navigation'

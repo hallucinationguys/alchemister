@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { UpdateUserRequest, UserResponse, UseProfileResult } from '../types'
+import type { UpdateUserRequest, UserResponse, UseProfileResult } from '../../types'
 
 export const useProfile = (): UseProfileResult => {
   const [loading, setLoading] = useState(false)

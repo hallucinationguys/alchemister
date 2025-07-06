@@ -1,5 +1,3 @@
-'use client'
-
 interface TypingIndicatorProps {
   className?: string
   content?: string

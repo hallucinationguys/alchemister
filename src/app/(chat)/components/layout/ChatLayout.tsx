@@ -1,7 +1,5 @@
-'use client'
-
 import { SidebarProvider } from '@/components/ui/sidebar'
-import ConversationSidebar from '../sidebar/conversation-sidebar'
+import ConversationSidebar from '../sidebar/ConversationSidebar'
 import type { ConversationSummaryResponse } from '../../types/conversation'
 
 interface ChatLayoutProps {

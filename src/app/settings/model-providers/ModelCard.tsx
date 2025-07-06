@@ -24,7 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import ModelList from '@/app/settings/model-providers/model-list'
+import ModelList from './ModelList'
 
 interface ModelCardProps {
   provider: EnhancedProviderResponse

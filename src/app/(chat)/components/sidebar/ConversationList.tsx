@@ -1,5 +1,3 @@
-'use client'
-
 import { MessageSquare, Loader2, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -8,7 +6,7 @@ import {
   SidebarMenuSkeleton,
   SidebarMenuButton,
 } from '@/components/ui/sidebar'
-import ConversationItem from './conversation-item'
+import ConversationItem from './ConversationItem'
 import type { ConversationSummaryResponse } from '../../types/conversation'
 
 interface ConversationListProps {

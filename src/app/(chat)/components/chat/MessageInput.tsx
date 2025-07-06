@@ -1,5 +1,3 @@
-'use client'
-
 import { useRef, useActionState, startTransition, useState } from 'react'
 import { Send, StopCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'

@@ -1,5 +1,3 @@
-'use client'
-
 import { MoreHorizontal, Edit, Trash2 } from 'lucide-react'
 import { SidebarMenuButton, SidebarMenuAction, SidebarMenuItem } from '@/components/ui/sidebar'
 import {

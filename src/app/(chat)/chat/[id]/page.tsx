@@ -3,8 +3,8 @@
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
-import ChatLayout from '../../components/layout/chat-layout'
-import ChatContainer from '../../components/layout/chat-container'
+import ChatLayout from '../../components/layout/ChatLayout'
+import ChatContainer from '../../components/layout/ChatContainer'
 import { useChatHistory } from '../../hooks/use-chat-history'
 import { useChatSession } from '../../hooks/use-chat-session'
 import type {

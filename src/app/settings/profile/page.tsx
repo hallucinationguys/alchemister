@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuth } from '@/contexts/auth-provider'
-import { useProfile } from '../hooks'
+import { useProfile } from './hooks/use-profile'
 import type { UserResponse } from '../types'
 
 export default function ProfilePage() {

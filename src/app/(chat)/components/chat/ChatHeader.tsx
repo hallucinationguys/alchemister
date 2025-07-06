@@ -1,9 +1,7 @@
-'use client'
-
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SidebarTrigger } from '@/components/ui/sidebar'
-import ModelSelector from './model-selector'
+import ModelSelector from './ModelSelector'
 import type { AvailableModel } from '../../hooks/use-available-models'
 
 interface ChatHeaderProps {

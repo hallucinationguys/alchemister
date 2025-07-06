@@ -1,5 +1,3 @@
-'use client'
-
 import { Copy, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatMessageTime } from '../../lib/chat-utils'

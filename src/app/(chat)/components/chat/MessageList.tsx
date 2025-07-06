@@ -1,10 +1,8 @@
-'use client'
-
 import { useEffect, useRef } from 'react'
 import { MessageCircle } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import MessageItem from './message-item'
-import TypingIndicator from './typing-indicator'
+import MessageItem from './MessageItem'
+import TypingIndicator from './TypingIndicator'
 import type { Message } from '../../types/conversation'
 
 interface MessageListProps {
