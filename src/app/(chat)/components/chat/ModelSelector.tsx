@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useNotificationStore } from '../../stores/notification-store'
 import Link from 'next/link'
 import { useAvailableModels, type AvailableModel } from '../../hooks/use-available-models'
 import { cn } from '@/lib/utils'
@@ -31,41 +31,38 @@ const ModelSelector = ({
 }: ModelSelectorProps) => {
   const [open, setOpen] = useState(false)
   const { models, loading, error, refetch } = useAvailableModels()
+  const { showError, showWarning } = useNotificationStore()
 
   const selectedModel = models.find(m => m.id === selectedModelId)
   const configuredModels = models.filter(m => m.has_api_key)
   const unconfiguredModels = models.filter(m => !m.has_api_key)
 
+  // Show error notification if there's an error loading models
   if (error) {
+    showError('Failed to load models', 'Please check your connection and try again.')
     return (
-      <Alert variant="destructive" className={className}>
-        <AlertCircle className="size-4" />
-        <AlertDescription>
-          Failed to load models.
-          <Button
-            variant="link"
-            size="sm"
-            onClick={refetch}
-            className="ml-1 h-auto p-0 text-xs underline"
-          >
-            Retry
-          </Button>
-        </AlertDescription>
-      </Alert>
+      <Button
+        variant="outline"
+        onClick={refetch}
+        disabled={disabled || loading}
+        className={cn('justify-between', className)}
+      >
+        <span className="text-destructive">Error loading models</span>
+        <AlertCircle className="ml-2 size-4 text-destructive" />
+      </Button>
     )
   }
 
+  // Show warning notification if no models are configured
   if (configuredModels.length === 0 && !loading) {
+    showWarning('No models configured', 'Please configure your API keys in settings to use models.')
     return (
-      <Alert className={`border-warning/20 bg-warning/10 ${className}`}>
-        <Settings className="size-4 text-warning" />
-        <AlertDescription className="text-warning-foreground">
-          No models configured.
-          <Button asChild variant="link" size="sm" className="ml-1 h-auto p-0 text-xs underline">
-            <Link href="/settings/model-providers">Configure API keys</Link>
-          </Button>
-        </AlertDescription>
-      </Alert>
+      <Button asChild variant="outline" disabled={disabled} className={className}>
+        <Link href="/settings/model-providers">
+          <Settings className="mr-2 size-4" />
+          Configure API keys
+        </Link>
+      </Button>
     )
   }
 
@@ -73,6 +70,11 @@ const ModelSelector = ({
     if (model.has_api_key) {
       onModelChange(model)
       setOpen(false)
+    } else {
+      showWarning(
+        'API key required',
+        `Please configure your API key for ${model.provider_display_name} first.`
+      )
     }
   }
 
@@ -147,8 +149,8 @@ const ModelSelector = ({
                   <CommandItem
                     key={model.id}
                     value={`${model.display_name} ${model.provider_display_name}`}
-                    disabled
-                    className="opacity-60"
+                    onSelect={() => handleModelSelect(model)}
+                    className="cursor-pointer opacity-60"
                   >
                     <Settings className="mr-2 size-4" />
                     <div className="flex items-center justify-between w-full">

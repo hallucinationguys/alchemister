@@ -7,15 +7,28 @@ import ChatLayout from '../../components/layout/ChatLayout'
 import ChatContainer from '../../components/layout/ChatContainer'
 import { useChatHistory } from '../../hooks/use-chat-history'
 import { useChatSession } from '../../hooks/use-chat-session'
+import { useAvailableModels } from '../../hooks/use-available-models'
+import { useState, useEffect } from 'react'
 import type {
   ConversationSummaryResponse,
   CreateConversationRequest,
 } from '../../types/conversation'
+import type { AvailableModel } from '../../hooks/use-available-models'
 
 const ConversationPage = () => {
   const params = useParams()
   const router = useRouter()
   const conversationId = params.id as string
+
+  const { models } = useAvailableModels()
+  const [selectedModel, setSelectedModel] = useState<AvailableModel | null>(null)
+
+  // Auto-select first available model
+  useEffect(() => {
+    if (models.length > 0 && !selectedModel) {
+      setSelectedModel(models[0])
+    }
+  }, [models, selectedModel])
 
   const {
     conversations,
@@ -33,7 +46,6 @@ const ConversationPage = () => {
     error: sessionError,
     sendMessage,
     streaming,
-    streamError,
     streamingContent,
     stopStreaming,
     refetch: refetchSession,
@@ -101,6 +113,10 @@ const ConversationPage = () => {
     refetchSession()
   }
 
+  const handleModelChange = (model: AvailableModel) => {
+    setSelectedModel(model)
+  }
+
   if (!conversationId) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -136,11 +152,12 @@ const ConversationPage = () => {
         messages={conversation?.messages || []}
         streaming={streaming}
         streamingContent={streamingContent}
-        streamError={streamError}
         onSendMessage={handleSendMessage}
         inputDisabled={streaming}
         onStopStreaming={stopStreaming}
         showModelSelector={true}
+        selectedModelId={selectedModel?.id}
+        onModelChange={handleModelChange}
         error={sessionError}
         onRetry={handleRetry}
       />

@@ -1,4 +1,4 @@
-import { useRef, useActionState, startTransition, useState } from 'react'
+import { useRef, useState, FormEvent } from 'react'
 import { Send, StopCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -24,42 +24,27 @@ const MessageInput = ({
   const [content, setContent] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const sendMessageAction = async (
-    prevState: { success?: boolean; error?: string },
-    formData: FormData
-  ) => {
-    const messageContent = formData.get('content') as string
-
-    if (!isValidMessage(messageContent) || disabled || streaming) {
-      return { success: false, error: 'Invalid message' }
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!isValidMessage(content) || disabled || streaming) {
+      return
     }
-
-    try {
-      onSendMessage(messageContent.trim())
-      setContent('')
-
-      // Reset textarea height
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto'
-      }
-
-      return { success: true }
-    } catch (error) {
-      return { success: false, error: 'Failed to send message' }
+    onSendMessage(content.trim())
+    setContent('')
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
     }
   }
-
-  const [state, formAction] = useActionState(sendMessageAction, { success: false })
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       if (isValidMessage(content) && !disabled && !streaming) {
-        startTransition(() => {
-          const formData = new FormData()
-          formData.append('content', content)
-          formAction(formData)
-        })
+        onSendMessage(content.trim())
+        setContent('')
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto'
+        }
       }
     }
   }
@@ -82,7 +67,7 @@ const MessageInput = ({
   return (
     <div className={`${className} sticky bottom-0 z-1000 bg-background`}>
       <div className="mx-auto max-w-4xl px-4 py-4">
-        <form action={formAction} className="relative">
+        <form onSubmit={handleSubmit} className="relative">
           <div className="relative flex items-end gap-2 p-3 rounded-2xl shadow-sm transition-all duration-200 focus-within:border-ring focus-within:shadow-md">
             <Textarea
               ref={textareaRef}
@@ -91,7 +76,7 @@ const MessageInput = ({
               onChange={handleInput}
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
-              disabled={disabled}
+              disabled={disabled || streaming}
               className="resize-none placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0"
               rows={1}
             />
