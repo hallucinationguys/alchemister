@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
-import type { ConversationDetailResponse, Message } from '../types/conversation'
+import type { ConversationDetailResponse, Message } from '@/chat/types/conversation'
 
 interface StreamingState {
   isStreaming: boolean

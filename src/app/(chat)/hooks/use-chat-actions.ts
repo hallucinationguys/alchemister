@@ -2,7 +2,7 @@
 
 import { useActionState, useCallback } from 'react'
 import { useAuth } from '@/contexts/auth-provider'
-import type { PostMessageRequest } from '../types/conversation'
+import type { PostMessageRequest } from '@/chat/types/conversation'
 
 interface ChatActionState {
   loading: boolean

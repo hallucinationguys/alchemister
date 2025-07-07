@@ -3,9 +3,13 @@
 import { useCallback, useRef, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { useAuth } from '@/contexts/auth-provider'
-import { useChatStore } from '../stores/chat-store'
-import { useNotificationStore } from '../stores/notification-store'
-import type { ConversationDetailResponse, PostMessageRequest, Message } from '../types/conversation'
+import { useChatStore } from '@/chat/stores/chat-store'
+import { useNotificationStore } from '@/chat/stores/notification-store'
+import type {
+  ConversationDetailResponse,
+  PostMessageRequest,
+  Message,
+} from '@/chat/types/conversation'
 
 interface ChatStreamEvent {
   content_delta: string

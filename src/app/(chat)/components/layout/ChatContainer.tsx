@@ -1,13 +1,12 @@
 import { AlertCircle, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SidebarInset } from '@/components/ui/sidebar'
-import ChatHeader from '../chat/ChatHeader'
-import MessageList from '../chat/MessageList'
-import MessageInput from '../chat/MessageInput'
-import { useNotificationStore } from '../../stores/notification-store'
+import ChatHeader from '@/chat/components/chat/ChatHeader'
+import MessageList from '@/chat/components/chat/MessageList'
+import MessageInput from '@/chat/components/chat/MessageInput'
+import { useNotificationStore } from '@/chat/stores/notification-store'
 import { useEffect } from 'react'
-import type { Message } from '../../types/conversation'
-import type { AvailableModel } from '../../hooks/use-available-models'
+import type { Message } from '@/chat/types/conversation'
 
 interface ChatContainerProps {
   // Header props
@@ -22,14 +21,12 @@ interface ChatContainerProps {
   streamingContent?: string
 
   // Input props
-  onSendMessage?: (content: string, modelId?: string) => void
+  onSendMessage?: (content: string) => void
   inputDisabled?: boolean
   onStopStreaming?: () => void
 
   // Model selector props
   showModelSelector?: boolean
-  selectedModelId?: string
-  onModelChange?: (model: AvailableModel) => void
 
   // Error handling
   error?: string | null
@@ -50,8 +47,6 @@ const ChatContainer = ({
   inputDisabled = false,
   onStopStreaming,
   showModelSelector = false,
-  selectedModelId,
-  onModelChange,
   error,
   onRetry,
   className = '',
@@ -67,7 +62,7 @@ const ChatContainer = ({
 
   const handleSendMessage = (content: string) => {
     if (onSendMessage && !inputDisabled) {
-      onSendMessage(content, selectedModelId)
+      onSendMessage(content)
     }
   }
 
@@ -79,8 +74,6 @@ const ChatContainer = ({
         onBackClick={onBackClick}
         showBackButton={showBackButton}
         showModelSelector={showModelSelector}
-        selectedModelId={selectedModelId}
-        onModelChange={onModelChange}
         disabled={loading || streaming}
       />
 

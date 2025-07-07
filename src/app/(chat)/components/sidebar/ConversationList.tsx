@@ -7,7 +7,7 @@ import {
   SidebarMenuButton,
 } from '@/components/ui/sidebar'
 import ConversationItem from './ConversationItem'
-import type { ConversationSummaryResponse } from '../../types/conversation'
+import type { ConversationSummaryResponse } from '@/chat/types/conversation'
 
 interface ConversationListProps {
   conversations: ConversationSummaryResponse[]
@@ -51,18 +51,7 @@ const ConversationList = ({
   if (conversations.length === 0) {
     return (
       <div className={`flex flex-col items-center justify-center py-8 text-center ${className}`}>
-        <MessageSquare className="size-8 text-muted-foreground mb-2" />
         <p className="text-sm text-muted-foreground mb-2">No conversations yet</p>
-        {onNewConversation && (
-          <Button variant="outline" size="sm" onClick={onNewConversation} disabled={isCreating}>
-            {isCreating ? (
-              <Loader2 className="size-4 animate-spin mr-2" />
-            ) : (
-              <Plus className="size-4 mr-2" />
-            )}
-            Start chatting
-          </Button>
-        )}
       </div>
     )
   }

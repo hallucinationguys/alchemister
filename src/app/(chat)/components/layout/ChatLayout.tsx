@@ -1,6 +1,6 @@
 import { SidebarProvider } from '@/components/ui/sidebar'
-import ConversationSidebar from '../sidebar/ConversationSidebar'
-import type { ConversationSummaryResponse } from '../../types/conversation'
+import ConversationSidebar from '@/chat/components/sidebar/ConversationSidebar'
+import type { ConversationSummaryResponse } from '@/chat/types/conversation'
 
 interface ChatLayoutProps {
   // Sidebar props

@@ -1,9 +1,9 @@
 import { Copy, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { formatMessageTime } from '../../lib/chat-utils'
+import { formatMessageTime } from '@/chat/lib/chat-utils'
 import { useState, memo } from 'react'
 import { Button } from '@/components/ui/button'
-import type { Message } from '../../types/conversation'
+import type { Message } from '@/chat/types/conversation'
 
 interface MessageItemProps {
   message: Message

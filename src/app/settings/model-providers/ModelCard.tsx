@@ -6,7 +6,7 @@ import type {
   ProviderResponse,
   UserProviderSettingResponse,
   EnhancedProviderResponse,
-} from '../types'
+} from '@/settings/types'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { ChevronDown, ChevronUp, Settings } from 'lucide-react'
-import { useProviderSettings } from './hooks'
+import { useProviderSettings } from './hooks/use-provider-settings'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
   Dialog,
@@ -29,17 +29,9 @@ import ModelList from './ModelList'
 interface ModelCardProps {
   provider: EnhancedProviderResponse
   userSetting?: UserProviderSettingResponse
-  refetchUserSettings: () => void
 }
 
-const ModelCard = ({ provider, userSetting, refetchUserSettings }: ModelCardProps) => {
-  console.log(`🔍 ModelCard for ${provider.display_name}:`, {
-    provider: provider,
-    userSetting: userSetting,
-    hasApiKey: userSetting?.api_key_set,
-    isActive: userSetting?.is_active,
-  })
-
+const ModelCard = ({ provider, userSetting }: ModelCardProps) => {
   const [showModels, setShowModels] = useState(false)
   const [showSetupDialog, setShowSetupDialog] = useState(false)
   const [apiKey, setApiKey] = useState('')
@@ -49,15 +41,18 @@ const ModelCard = ({ provider, userSetting, refetchUserSettings }: ModelCardProp
 
   const handleSaveSettings = async () => {
     try {
-      await saveSettings({
+      const result = await saveSettings({
         provider_id: provider.id,
         api_key: apiKey,
         api_base_override: baseURL,
       })
 
-      setShowSetupDialog(false)
-      setApiKey('')
-      refetchUserSettings()
+      // Only close dialog if save was successful
+      if (result) {
+        setShowSetupDialog(false)
+        setApiKey('')
+        // No need to call refetchUserSettings - the optimized hook updates the store automatically
+      }
     } catch (error) {
       console.error('Error saving settings:', error)
     }

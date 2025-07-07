@@ -2,7 +2,6 @@ import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import ModelSelector from './ModelSelector'
-import type { AvailableModel } from '../../hooks/use-available-models'
 
 interface ChatHeaderProps {
   title?: string
@@ -10,8 +9,6 @@ interface ChatHeaderProps {
   onBackClick?: () => void
   showBackButton?: boolean
   showModelSelector?: boolean
-  selectedModelId?: string
-  onModelChange?: (model: AvailableModel) => void
   disabled?: boolean
   className?: string
 }
@@ -22,8 +19,6 @@ const ChatHeader = ({
   onBackClick,
   showBackButton = false,
   showModelSelector = false,
-  selectedModelId,
-  onModelChange,
   disabled = false,
   className = '',
 }: ChatHeaderProps) => {
@@ -48,14 +43,9 @@ const ChatHeader = ({
       </div>
 
       {/* Right side - Model Selector */}
-      {showModelSelector && onModelChange && (
+      {showModelSelector && (
         <div className="flex items-center gap-4">
-          <ModelSelector
-            selectedModelId={selectedModelId}
-            onModelChange={onModelChange}
-            disabled={disabled}
-            className="min-w-[200px]"
-          />
+          <ModelSelector disabled={disabled} className="min-w-[200px]" />
         </div>
       )}
     </header>

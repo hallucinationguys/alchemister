@@ -5,4 +5,4 @@ export type {
   UpsertUserProviderSettingRequest,
   Model,
   EnhancedProviderResponse,
-} from '../types'
+} from '@/settings/types'

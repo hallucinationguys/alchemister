@@ -1,17 +1,27 @@
 import { useState } from 'react'
+import { useProvidersStore } from '@/chat/stores/providers'
 import type {
   UpsertUserProviderSettingRequest,
   UserProviderSettingResponse,
-  UseProviderSettingsResult,
-} from '../../types'
+} from '@/settings/types'
+
+interface UseProviderSettingsResult {
+  saveSettings: (
+    data: UpsertUserProviderSettingRequest
+  ) => Promise<UserProviderSettingResponse | undefined>
+  loading: boolean
+  error: string | null
+}
 
 export const useProviderSettings = (): UseProviderSettingsResult => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { updateUserSettings, userSettings } = useProvidersStore()
 
   const saveSettings = async (data: UpsertUserProviderSettingRequest) => {
     setLoading(true)
     setError(null)
+
     try {
       const token = localStorage.getItem('access_token')
       const headers = {
@@ -31,9 +41,24 @@ export const useProviderSettings = (): UseProviderSettingsResult => {
       }
 
       const responseData = await response.json()
-      return responseData.data as UserProviderSettingResponse
+      const newSetting = responseData.data as UserProviderSettingResponse
+
+      // Update the store with the new setting
+      const updatedSettings = userSettings.map(setting =>
+        setting.provider_id === newSetting.provider_id ? newSetting : setting
+      )
+
+      // If this is a new setting, add it to the array
+      if (!userSettings.some(setting => setting.provider_id === newSetting.provider_id)) {
+        updatedSettings.push(newSetting)
+      }
+
+      updateUserSettings(updatedSettings)
+
+      return newSetting
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred')
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred'
+      setError(errorMessage)
       console.error('Error saving settings:', err)
       return undefined
     } finally {

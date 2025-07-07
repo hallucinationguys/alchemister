@@ -3,32 +3,22 @@
 import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
-import ChatLayout from '../../components/layout/ChatLayout'
-import ChatContainer from '../../components/layout/ChatContainer'
-import { useChatHistory } from '../../hooks/use-chat-history'
-import { useChatSession } from '../../hooks/use-chat-session'
-import { useAvailableModels } from '../../hooks/use-available-models'
-import { useState, useEffect } from 'react'
+import ChatLayout from '@/chat/components/layout/ChatLayout'
+import ChatContainer from '@/chat/components/layout/ChatContainer'
+import { useChatHistory } from '@/chat/hooks/use-chat-history'
+import { useChatSession } from '@/chat/hooks/use-chat-session'
+import { useProviders } from '@/chat/hooks/use-providers'
 import type {
   ConversationSummaryResponse,
   CreateConversationRequest,
-} from '../../types/conversation'
-import type { AvailableModel } from '../../hooks/use-available-models'
+} from '@/chat/types/conversation'
 
 const ConversationPage = () => {
   const params = useParams()
   const router = useRouter()
   const conversationId = params.id as string
 
-  const { models } = useAvailableModels()
-  const [selectedModel, setSelectedModel] = useState<AvailableModel | null>(null)
-
-  // Auto-select first available model
-  useEffect(() => {
-    if (models.length > 0 && !selectedModel) {
-      setSelectedModel(models[0])
-    }
-  }, [models, selectedModel])
+  const { selectedModel } = useProviders()
 
   const {
     conversations,
@@ -93,11 +83,14 @@ const ConversationPage = () => {
     }
   }
 
-  const handleSendMessage = async (content: string, modelId?: string) => {
+  const handleSendMessage = async (content: string) => {
     if (!conversationId || streaming) return
 
     try {
-      await sendMessage({ content, model_id: modelId })
+      await sendMessage({
+        content,
+        model_id: selectedModel?.id,
+      })
     } catch (err) {
       console.error('Failed to send message:', err)
     }
@@ -109,10 +102,6 @@ const ConversationPage = () => {
 
   const handleRetry = () => {
     refetchSession()
-  }
-
-  const handleModelChange = (model: AvailableModel) => {
-    setSelectedModel(model)
   }
 
   if (!conversationId) {
@@ -154,8 +143,6 @@ const ConversationPage = () => {
         inputDisabled={streaming}
         onStopStreaming={stopStreaming}
         showModelSelector={true}
-        selectedModelId={selectedModel?.id}
-        onModelChange={handleModelChange}
         error={sessionError}
         onRetry={handleRetry}
       />

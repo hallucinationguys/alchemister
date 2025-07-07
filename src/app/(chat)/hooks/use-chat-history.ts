@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/auth-provider'
-import type { ConversationSummaryResponse, CreateConversationRequest } from '../types/conversation'
+import type {
+  ConversationSummaryResponse,
+  CreateConversationRequest,
+} from '@/chat/types/conversation'
 
 interface UseChatHistoryOptions {
   limit?: number

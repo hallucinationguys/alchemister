@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import type { Model } from '../types'
+import type { Model } from '@/settings/types'
 
 interface ModelListProps {
   models: Model[]

@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button'
 import ConversationList from './ConversationList'
 import NewChatButton from './NewChatButton'
 import { Settings } from 'lucide-react'
-import type { ConversationSummaryResponse } from '../../types/conversation'
+import type { ConversationSummaryResponse } from '@/chat/types/conversation'
 import { useRouter } from 'next/navigation'
 
 interface ConversationSidebarProps {

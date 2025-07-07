@@ -89,13 +89,6 @@ export interface ApiErrorResponse {
 }
 
 // Hook return types
-export interface UseAiProvidersResult {
-  providers: ProviderResponse[]
-  userSettings: UserProviderSettingResponse[]
-  loading: boolean
-  error: string | null
-  refetch: () => void
-}
 
 export interface UseProviderSettingsResult {
   saveSettings: (

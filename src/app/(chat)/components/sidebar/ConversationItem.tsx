@@ -30,8 +30,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useState, useId } from 'react'
 import { toast } from 'sonner'
-import { useChatHistory } from '../../hooks/use-chat-history'
-import type { ConversationSummaryResponse } from '../../types/conversation'
+import { useChatHistory } from '@/chat/hooks/use-chat-history'
+import type { ConversationSummaryResponse } from '@/chat/types/conversation'
 
 interface ConversationItemProps {
   conversation: ConversationSummaryResponse

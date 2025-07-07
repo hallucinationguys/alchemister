@@ -1,33 +1,25 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { MessageSquare, Sparkles, Zap, Bot } from 'lucide-react'
-import ChatLayout from '../components/layout/ChatLayout'
-import ChatHeader from '../components/chat/ChatHeader'
-import MessageInput from '../components/chat/MessageInput'
+import ChatLayout from '@/chat/components/layout/ChatLayout'
+import ChatHeader from '@/chat/components/chat/ChatHeader'
+import MessageInput from '@/chat/components/chat/MessageInput'
 import { SidebarInset } from '@/components/ui/sidebar'
-import { useChatHistory } from '../hooks/use-chat-history'
-import { useAvailableModels } from '../hooks/use-available-models'
-import { useState, useEffect } from 'react'
+import { useChatHistory } from '@/chat/hooks/use-chat-history'
+import { useProviders } from '@/chat/hooks/use-providers'
 
-import type { CreateConversationRequest, ConversationSummaryResponse } from '../types/conversation'
-import type { AvailableModel } from '../hooks/use-available-models'
+import type {
+  CreateConversationRequest,
+  ConversationSummaryResponse,
+} from '@/chat/types/conversation'
 
 const ChatPage = () => {
   const router = useRouter()
-  const { models, loading: modelsLoading } = useAvailableModels()
-  const [selectedModel, setSelectedModel] = useState<AvailableModel | null>(null)
+  const { selectedModel, loading: modelsLoading } = useProviders()
 
   const { conversations, loading, error, hasMore, startNewChat, loadMore, refetch } =
     useChatHistory()
-
-  // Auto-select first available model
-  useEffect(() => {
-    if (models.length > 0 && !selectedModel) {
-      setSelectedModel(models[0])
-    }
-  }, [models, selectedModel])
 
   const handleConversationSelect = (conversation: ConversationSummaryResponse) => {
     router.push(`/chat/${conversation.id}`)
@@ -73,10 +65,6 @@ const ChatPage = () => {
     if (content.trim() && selectedModel) {
       handleNewConversation(content.trim())
     }
-  }
-
-  const handleModelChange = (model: AvailableModel) => {
-    setSelectedModel(model)
   }
 
   // Suggested prompts
@@ -149,13 +137,7 @@ const ChatPage = () => {
       onSidebarRetry={refetch}
     >
       <SidebarInset className="flex flex-col">
-        <ChatHeader
-          title="AI Assistant"
-          showModelSelector={true}
-          selectedModelId={selectedModel?.id}
-          onModelChange={handleModelChange}
-          disabled={modelsLoading}
-        />
+        <ChatHeader title="AI Assistant" showModelSelector={true} disabled={modelsLoading} />
         {welcomeContent}
       </SidebarInset>
     </ChatLayout>

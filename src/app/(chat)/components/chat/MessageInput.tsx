@@ -2,7 +2,7 @@ import { useRef, useState, FormEvent } from 'react'
 import { Send, StopCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { isValidMessage } from '../../lib/chat-utils'
+import { isValidMessage } from '@/chat/lib/chat-utils'
 
 interface MessageInputProps {
   onSendMessage: (content: string) => void

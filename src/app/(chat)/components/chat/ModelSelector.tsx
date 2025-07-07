@@ -11,31 +11,23 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Badge } from '@/components/ui/badge'
-import { useNotificationStore } from '../../stores/notification-store'
+import { useNotificationStore } from '@/chat/stores/notification-store'
 import Link from 'next/link'
-import { useAvailableModels, type AvailableModel } from '../../hooks/use-available-models'
+import { useProviders, type AvailableModel } from '@/chat/hooks/use-providers'
 import { cn } from '@/lib/utils'
 
 interface ModelSelectorProps {
-  selectedModelId?: string
-  onModelChange: (model: AvailableModel) => void
   disabled?: boolean
   className?: string
 }
 
-const ModelSelector = ({
-  selectedModelId,
-  onModelChange,
-  disabled = false,
-  className = '',
-}: ModelSelectorProps) => {
+const ModelSelector = ({ disabled = false, className = '' }: ModelSelectorProps) => {
   const [open, setOpen] = useState(false)
-  const { models, loading, error, refetch } = useAvailableModels()
+  const { models, loading, error, selectedModel, setSelectedModel, refetch } = useProviders()
   const { showError, showWarning } = useNotificationStore()
 
-  const selectedModel = models.find(m => m.id === selectedModelId)
-  const configuredModels = models.filter(m => m.has_api_key)
-  const unconfiguredModels = models.filter(m => !m.has_api_key)
+  const configuredModels = models.filter((m: AvailableModel) => m.has_api_key)
+  const unconfiguredModels = models.filter((m: AvailableModel) => !m.has_api_key)
 
   // Show error notification if there's an error loading models
   if (error) {
@@ -43,7 +35,7 @@ const ModelSelector = ({
     return (
       <Button
         variant="outline"
-        onClick={refetch}
+        onClick={() => refetch()}
         disabled={disabled || loading}
         className={cn('justify-between', className)}
       >
@@ -68,7 +60,7 @@ const ModelSelector = ({
 
   const handleModelSelect = (model: AvailableModel) => {
     if (model.has_api_key) {
-      onModelChange(model)
+      setSelectedModel(model)
       setOpen(false)
     } else {
       showWarning(
@@ -121,7 +113,7 @@ const ModelSelector = ({
                     <Check
                       className={cn(
                         'mr-2 size-4',
-                        selectedModelId === model.id ? 'opacity-100' : 'opacity-0'
+                        selectedModel?.id === model.id ? 'opacity-100' : 'opacity-0'
                       )}
                     />
                     <div className="flex items-center justify-between w-full">

@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useActionState } from 'react'
 import { sendMagicLink, type FormState } from '@/app/(auth)/actions'
-import AuthLayout from '../AuthLayout'
+import AuthLayout from '@/auth/AuthLayout'
 import { MailCheck } from 'lucide-react'
 
 const initialState: FormState = {

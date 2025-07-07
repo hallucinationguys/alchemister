@@ -2,7 +2,7 @@ import { useEffect, useRef, memo } from 'react'
 import { MessageCircle } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import MessageItem from './MessageItem'
-import type { Message } from '../../types/conversation'
+import type { Message } from '@/chat/types/conversation'
 
 interface MessageListProps {
   messages: Message[]
