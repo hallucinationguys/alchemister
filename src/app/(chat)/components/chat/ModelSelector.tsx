@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Badge } from '@/components/ui/badge'
-import { useNotificationStore } from '@/chat/stores/notification-store'
+import { toast } from 'sonner'
+import { showApiKeyError } from '@/chat/lib/toast-utils'
 import Link from 'next/link'
 import { useProviders, type AvailableModel } from '@/chat/hooks/use-providers'
 import { cn } from '@/lib/utils'
@@ -24,14 +25,16 @@ interface ModelSelectorProps {
 const ModelSelector = ({ disabled = false, className = '' }: ModelSelectorProps) => {
   const [open, setOpen] = useState(false)
   const { models, loading, error, selectedModel, setSelectedModel, refetch } = useProviders()
-  const { showError, showWarning } = useNotificationStore()
+  // Using toast directly - no need for store
 
   const configuredModels = models.filter((m: AvailableModel) => m.has_api_key)
   const unconfiguredModels = models.filter((m: AvailableModel) => !m.has_api_key)
 
   // Show error notification if there's an error loading models
   if (error) {
-    showError('Failed to load models', 'Please check your connection and try again.')
+    toast.error('Failed to load models', {
+      description: 'Please check your connection and try again.',
+    })
     return (
       <Button
         variant="outline"
@@ -47,7 +50,9 @@ const ModelSelector = ({ disabled = false, className = '' }: ModelSelectorProps)
 
   // Show warning notification if no models are configured
   if (configuredModels.length === 0 && !loading) {
-    showWarning('No models configured', 'Please configure your API keys in settings to use models.')
+    toast.warning('No models configured', {
+      description: 'Please configure your API keys in settings to use models.',
+    })
     return (
       <Button asChild variant="outline" disabled={disabled} className={className}>
         <Link href="/settings/model-providers">
@@ -63,10 +68,9 @@ const ModelSelector = ({ disabled = false, className = '' }: ModelSelectorProps)
       setSelectedModel(model)
       setOpen(false)
     } else {
-      showWarning(
-        'API key required',
-        `Please configure your API key for ${model.provider_display_name} first.`
-      )
+      toast.warning('API key required', {
+        description: `Please configure your API key for ${model.provider_display_name} first.`,
+      })
     }
   }
 

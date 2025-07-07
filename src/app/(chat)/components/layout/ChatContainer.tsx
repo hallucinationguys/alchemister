@@ -4,7 +4,7 @@ import { SidebarInset } from '@/components/ui/sidebar'
 import ChatHeader from '@/chat/components/chat/ChatHeader'
 import MessageList from '@/chat/components/chat/MessageList'
 import MessageInput from '@/chat/components/chat/MessageInput'
-import { useNotificationStore } from '@/chat/stores/notification-store'
+import { toast } from 'sonner'
 import { useEffect } from 'react'
 import type { Message } from '@/chat/types/conversation'
 
@@ -51,14 +51,14 @@ const ChatContainer = ({
   onRetry,
   className = '',
 }: ChatContainerProps) => {
-  const { showError } = useNotificationStore()
-
   // Show error notification when error prop changes
   useEffect(() => {
     if (error) {
-      showError(error, 'Please try again or check your connection.')
+      toast.error(error, {
+        description: 'Please try again or check your connection.',
+      })
     }
-  }, [error, showError])
+  }, [error])
 
   const handleSendMessage = (content: string) => {
     if (onSendMessage && !inputDisabled) {

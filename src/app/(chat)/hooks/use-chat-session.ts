@@ -3,8 +3,15 @@
 import { useCallback, useRef, useEffect } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { useAuth } from '@/contexts/auth-provider'
-import { useChatStore } from '@/chat/stores/chat-store'
-import { useNotificationStore } from '@/chat/stores/notification-store'
+import {
+  useChatStore,
+  useChatActions,
+  useChatLoading,
+  useChatStreaming,
+  useCurrentConversation,
+} from '@/chat/stores/chat'
+import { toast } from 'sonner'
+import { showStreamError } from '@/chat/lib/toast-utils'
 import type {
   ConversationDetailResponse,
   PostMessageRequest,
@@ -57,7 +64,7 @@ export const useChatSession = (options: UseChatSessionOptions): UseChatSessionRe
     stopStreaming: stopStreamingStore,
   } = useChatStore()
 
-  const { showError, showStreamError } = useNotificationStore()
+  // Using toast directly - no need for store
 
   // References for managing streaming and batching
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -93,12 +100,12 @@ export const useChatSession = (options: UseChatSessionOptions): UseChatSessionRe
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch conversation'
       setError(errorMessage)
-      showError(errorMessage)
+      toast.error(errorMessage)
       console.error('Error fetching conversation:', err)
     } finally {
       setLoading(false)
     }
-  }, [token, conversationId, setLoading, setError, setConversation, showError])
+  }, [token, conversationId, setLoading, setError, setConversation])
 
   const refetch = useCallback(() => fetchConversation(), [fetchConversation])
 
@@ -130,7 +137,7 @@ export const useChatSession = (options: UseChatSessionOptions): UseChatSessionRe
   const sendMessage = useCallback(
     async (data: PostMessageRequest) => {
       if (!token || !conversationId) {
-        showError('No authentication token or conversation ID available')
+        toast.error('No authentication token or conversation ID available')
         return
       }
 
@@ -173,7 +180,7 @@ export const useChatSession = (options: UseChatSessionOptions): UseChatSessionRe
         if (!response.ok) {
           const errorData = await response.json()
           const errorMessage = errorData.error || 'Failed to send message'
-          showError(errorMessage)
+          toast.error(errorMessage)
           throw new Error(errorMessage)
         }
 
@@ -288,7 +295,7 @@ export const useChatSession = (options: UseChatSessionOptions): UseChatSessionRe
       } catch (err) {
         if (err instanceof Error && err.name !== 'AbortError') {
           const errorMessage = err.message || 'Failed to send message'
-          showError(errorMessage)
+          toast.error(errorMessage)
           console.error('Error sending message:', err)
         }
         cleanupStreaming()
@@ -302,8 +309,7 @@ export const useChatSession = (options: UseChatSessionOptions): UseChatSessionRe
       startStreaming,
       finalizeStreaming,
       stopStreamingStore,
-      showError,
-      showStreamError,
+
       cleanupStreaming,
       flushStreamingBuffer,
       fetchConversation,
