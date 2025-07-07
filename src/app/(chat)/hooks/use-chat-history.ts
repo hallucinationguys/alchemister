@@ -16,6 +16,8 @@ interface UseChatHistoryResult {
   error: string | null
   refetch: () => Promise<void>
   startNewChat: (data: CreateConversationRequest) => Promise<ConversationSummaryResponse | null>
+  updateConversationTitle: (id: string, title: string) => Promise<void>
+  deleteConversation: (id: string) => Promise<void>
   hasMore: boolean
   loadMore: () => Promise<void>
 }
@@ -131,6 +133,73 @@ export const useChatHistory = (options: UseChatHistoryOptions = {}): UseChatHist
     [token]
   )
 
+  const updateConversationTitle = useCallback(
+    async (id: string, title: string) => {
+      if (!token) {
+        setError('No authentication token available')
+        return
+      }
+
+      try {
+        const response = await fetch(`/api/${id}`, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ title }),
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to update conversation title')
+        }
+
+        // Update the conversation title in local state
+        setConversations(prev => prev.map(conv => (conv.id === id ? { ...conv, title } : conv)))
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to update conversation title'
+        setError(errorMessage)
+        console.error('Error updating conversation title:', err)
+        throw err
+      }
+    },
+    [token]
+  )
+
+  const deleteConversation = useCallback(
+    async (id: string) => {
+      if (!token) {
+        setError('No authentication token available')
+        return
+      }
+
+      try {
+        const response = await fetch(`/api/${id}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Failed to delete conversation')
+        }
+
+        // Remove the conversation from local state
+        setConversations(prev => prev.filter(conv => conv.id !== id))
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to delete conversation'
+        setError(errorMessage)
+        console.error('Error deleting conversation:', err)
+        throw err
+      }
+    },
+    [token]
+  )
+
   // Auto-fetch conversations on mount and when token changes
   useEffect(() => {
     if (autoFetch && token) {
@@ -144,6 +213,8 @@ export const useChatHistory = (options: UseChatHistoryOptions = {}): UseChatHist
     error,
     refetch,
     startNewChat,
+    updateConversationTitle,
+    deleteConversation,
     hasMore,
     loadMore,
   }

@@ -75,18 +75,16 @@ const ConversationPage = () => {
   }
 
   const handleEditConversation = (conversation: ConversationSummaryResponse) => {
-    // TODO: Implement edit conversation title functionality
-    console.log('Edit conversation:', conversation.id)
-    // This could open a dialog to edit the title
+    // Refresh conversation history to get updated titles
+    refetchHistory()
   }
 
   const handleDeleteConversation = (conversation: ConversationSummaryResponse) => {
-    // TODO: Implement delete conversation functionality
-    console.log('Delete conversation:', conversation.id)
     // If deleting the current conversation, redirect to main chat page
     if (conversation.id === conversationId) {
       router.push('/chat')
     }
+    // Note: useChatHistory automatically removes deleted conversations from state
   }
 
   const handleLoadMore = () => {

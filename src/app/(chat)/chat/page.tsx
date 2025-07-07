@@ -56,13 +56,11 @@ const ChatPage = () => {
   }
 
   const handleEditConversation = (conversation: ConversationSummaryResponse) => {
-    // TODO: Implement edit conversation title functionality
-    console.log('Edit conversation:', conversation.id)
+    // Note: useChatHistory automatically updates conversation titles in state
   }
 
   const handleDeleteConversation = (conversation: ConversationSummaryResponse) => {
-    // TODO: Implement delete conversation functionality
-    console.log('Delete conversation:', conversation.id)
+    // Note: useChatHistory automatically removes deleted conversations from state
   }
 
   const handleLoadMore = () => {
