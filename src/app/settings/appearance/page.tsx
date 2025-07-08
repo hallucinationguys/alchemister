@@ -1,9 +1,9 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@/shared/ui/button'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@/shared/ui/skeleton'
 
 export default function AppearancePage() {
   const [mounted, setMounted] = useState(false)

@@ -1,6 +1,5 @@
 import { Suspense } from 'react'
-import VerifyClientComponent from './VerifyClientComponent'
-import AuthLayout from '@/auth/AuthLayout'
+import VerifyClientComponent from '@/features/auth/components/VerifyClientComponent'
 import { LoaderCircle } from 'lucide-react'
 
 function VerificationFallback() {
@@ -17,10 +16,8 @@ function VerificationFallback() {
 
 export default function VerifyPage() {
   return (
-    <AuthLayout>
-      <Suspense fallback={<VerificationFallback />}>
-        <VerifyClientComponent />
-      </Suspense>
-    </AuthLayout>
+    <Suspense fallback={<VerificationFallback />}>
+      <VerifyClientComponent />
+    </Suspense>
   )
 }

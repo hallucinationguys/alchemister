@@ -1,4 +1,4 @@
-import { SettingsSidebarNav } from './SettingsSidebarNav'
+import { SettingsSidebarNav } from '@/features/settings/components/SettingsSidebarNav'
 
 interface SettingsLayoutProps {
   children: React.ReactNode
