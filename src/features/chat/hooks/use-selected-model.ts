@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
 /**
  * Available model interface
@@ -41,7 +41,7 @@ export const useSelectedModel = () => {
     }
   }, [])
 
-  const setSelectedModel = useCallback((model: AvailableModel | null) => {
+  function setSelectedModel(model: AvailableModel | null) {
     setSelectedModelState(model)
 
     // Persist to localStorage
@@ -52,7 +52,7 @@ export const useSelectedModel = () => {
         localStorage.removeItem(SELECTED_MODEL_KEY)
       }
     }
-  }, [])
+  }
 
   return {
     selectedModel,

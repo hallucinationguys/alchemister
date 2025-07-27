@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 
 /**
  * Hook for managing message editing state
@@ -9,13 +9,13 @@ import { useState, useCallback } from 'react'
 export const useEditingState = () => {
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null)
 
-  const startEditing = useCallback((messageId: string) => {
+  function startEditing(messageId: string) {
     setEditingMessageId(messageId)
-  }, [])
+  }
 
-  const stopEditing = useCallback(() => {
+  function stopEditing() {
     setEditingMessageId(null)
-  }, [])
+  }
 
   return {
     editingMessageId,

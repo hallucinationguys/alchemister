@@ -8,7 +8,7 @@ import {
   SidebarMenuButton,
 } from '@/shared/ui/sidebar'
 import ConversationItem from './ConversationItem'
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef } from 'react'
 import type { ConversationSummaryResponse } from '@/features/chat/types/conversation'
 
 interface ConversationListProps {
@@ -37,7 +37,7 @@ const ConversationList = ({
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
 
   // Setup intersection observer for infinite scrolling
-  const setupObserver = useCallback(() => {
+  function setupObserver() {
     if (observerRef.current) {
       observerRef.current.disconnect()
     }
@@ -59,7 +59,7 @@ const ConversationList = ({
     if (loadMoreRef.current) {
       observerRef.current.observe(loadMoreRef.current)
     }
-  }, [hasMore, loading, onLoadMore])
+  }
 
   // Setup observer when dependencies change
   useEffect(() => {
@@ -70,7 +70,7 @@ const ConversationList = ({
         observerRef.current.disconnect()
       }
     }
-  }, [setupObserver])
+  }, [hasMore, loading, onLoadMore])
 
   // Show loading skeletons when initially loading
   if (loading && conversations.length === 0) {

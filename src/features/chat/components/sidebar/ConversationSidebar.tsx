@@ -20,7 +20,7 @@ import {
   useInfiniteConversations,
   useCreateConversation,
 } from '@/features/chat/queries/useConversation'
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import type { ConversationSummaryResponse } from '@/features/chat/types/conversation'
 
@@ -59,7 +59,7 @@ const ConversationSidebar = ({
   const conversations = data?.pages.flat() || []
 
   // Handle creating a new conversation
-  const handleNewConversation = useCallback(async () => {
+  async function handleNewConversation() {
     if (isCreating) return
 
     setIsCreating(true)
@@ -85,37 +85,34 @@ const ConversationSidebar = ({
     } finally {
       setIsCreating(false)
     }
-  }, [createConversation, onConversationSelect, isCreating, isMobile, setOpenMobile])
+  }
 
   // Handle conversation selection
-  const handleConversationSelect = useCallback(
-    (conversation: ConversationSummaryResponse) => {
-      onConversationSelect(conversation)
+  function handleConversationSelect(conversation: ConversationSummaryResponse) {
+    onConversationSelect(conversation)
 
-      // Close mobile sidebar after selection on mobile
-      if (isMobile) {
-        setOpenMobile(false)
-      }
-    },
-    [onConversationSelect, isMobile, setOpenMobile]
-  )
+    // Close mobile sidebar after selection on mobile
+    if (isMobile) {
+      setOpenMobile(false)
+    }
+  }
 
   // Handle loading more conversations
-  const handleLoadMore = useCallback(() => {
+  function handleLoadMore() {
     if (!isFetchingNextPage && hasNextPage) {
       fetchNextPage()
     }
-  }, [fetchNextPage, isFetchingNextPage, hasNextPage])
+  }
 
   // Handle retry loading conversations
-  const handleRetry = useCallback(() => {
+  function handleRetry() {
     refetch()
-  }, [refetch])
+  }
 
   // Handle settings navigation
-  const handleSettingsClick = useCallback(() => {
+  function handleSettingsClick() {
     router.push('/settings/profile')
-  }, [router])
+  }
 
   return (
     <Sidebar

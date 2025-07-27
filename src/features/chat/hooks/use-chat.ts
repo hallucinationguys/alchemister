@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { useStreamingState } from '@/features/chat/hooks/use-streaming-state'
 import {
@@ -122,47 +122,43 @@ export const useChat = (options: UseChatOptions = {}): UseChatReturn => {
   // Get conversation data directly from the query result
   const conversation = conversationQuery.data || null
 
-  // Memoize the data comparison to prevent unnecessary re-renders
-  const dataChanged = useCallback(() => {
-    if (!conversationQuery.data || !prevDataRef.current) return true
-
-    // Compare only essential fields
-    const prev = prevDataRef.current
-    const curr = conversationQuery.data
-
-    if (prev.id !== curr.id || prev.title !== curr.title) return true
-    if (prev.messages.length !== curr.messages.length) return true
-
-    // For messages, just check the last message if it exists
-    if (prev.messages.length > 0 && curr.messages.length > 0) {
-      const prevLastMsg = prev.messages[prev.messages.length - 1]
-      const currLastMsg = curr.messages[curr.messages.length - 1]
-      return prevLastMsg.id !== currLastMsg.id || prevLastMsg.content !== currLastMsg.content
-    }
-
-    return false
-  }, [conversationQuery.data])
+  // Data comparison - React 19 compiler will optimize this automatically
+  // Moved inside useEffect to avoid dependency issues
 
   // Use a separate effect for data updates to minimize re-renders
   useEffect(() => {
-    // Only process if we have successful data and it has changed
-    if (
-      conversationQuery.isSuccess &&
-      conversationQuery.data &&
-      dataChanged() &&
-      !processedDataRef.current
-    ) {
-      prevDataRef.current = conversationQuery.data
-      // Mark as processed to prevent multiple updates in the same render cycle
-      processedDataRef.current = true
+    // Only process if we have successful data
+    if (conversationQuery.isSuccess && conversationQuery.data && !processedDataRef.current) {
+      // Compare only essential fields
+      const prev = prevDataRef.current
+      const curr = conversationQuery.data
 
-      // Use setTimeout to break the potential render cycle and avoid infinite loops
-      setTimeout(() => {
-        // Reset the processed flag after the update
-        processedDataRef.current = false
-      }, 0)
+      const hasChanged =
+        !prev ||
+        prev.id !== curr.id ||
+        prev.title !== curr.title ||
+        prev.messages.length !== curr.messages.length ||
+        // For messages, just check the last message if it exists
+        (prev.messages.length > 0 &&
+          curr.messages.length > 0 &&
+          (prev.messages[prev.messages.length - 1].id !==
+            curr.messages[curr.messages.length - 1].id ||
+            prev.messages[prev.messages.length - 1].content !==
+              curr.messages[curr.messages.length - 1].content))
+
+      if (hasChanged) {
+        prevDataRef.current = conversationQuery.data
+        // Mark as processed to prevent multiple updates in the same render cycle
+        processedDataRef.current = true
+
+        // Use setTimeout to break the potential render cycle and avoid infinite loops
+        setTimeout(() => {
+          // Reset the processed flag after the update
+          processedDataRef.current = false
+        }, 0)
+      }
     }
-  }, [conversationQuery.isSuccess, conversationQuery.data, dataChanged])
+  }, [conversationQuery.isSuccess, conversationQuery.data])
 
   // Use a separate effect for error updates to minimize re-renders
   useEffect(() => {
@@ -176,8 +172,8 @@ export const useChat = (options: UseChatOptions = {}): UseChatReturn => {
     }
   }, [conversationQuery.isError, conversationQuery.error])
 
-  // Get messages from conversation and convert to Message type - memoize to prevent unnecessary re-renders
-  const messages = useMemo(() => {
+  // Get messages from conversation and convert to Message type - React 19 compiler optimizes this
+  const messages = (() => {
     if (!conversation || !conversation.messages) return []
 
     return conversation.messages.map(
@@ -189,7 +185,7 @@ export const useChat = (options: UseChatOptions = {}): UseChatReturn => {
           tools: [], // Initialize empty tools array
         }) as Message
     )
-  }, [conversation, conversationId])
+  })()
 
   // Send message mutation with streaming support
   const sendMessageMutation = useSendMessage(conversationId || '', handleStreamEvent)
@@ -239,40 +235,37 @@ export const useChat = (options: UseChatOptions = {}): UseChatReturn => {
   /**
    * Send a message in the current conversation
    */
-  const sendMessage = useCallback(
-    async (content: string) => {
-      if (!conversationId) {
-        setError('No active conversation')
-        return
+  const sendMessage = async (content: string) => {
+    if (!conversationId) {
+      setError('No active conversation')
+      return
+    }
+
+    try {
+      // Create message request
+      const messageRequest: PostMessageRequest = {
+        content,
+        model_id: selectedModel?.id,
       }
 
-      try {
-        // Create message request
-        const messageRequest: PostMessageRequest = {
-          content,
-          model_id: selectedModel?.id,
-        }
+      // Generate a temporary ID for the assistant message
+      const tempAssistantId = `temp-${uuidv4()}`
 
-        // Generate a temporary ID for the assistant message
-        const tempAssistantId = `temp-${uuidv4()}`
+      // Start streaming for the assistant message
+      startStreaming(conversationId, tempAssistantId)
 
-        // Start streaming for the assistant message
-        startStreaming(conversationId, tempAssistantId)
-
-        // Send the message
-        await sendMessageMutation.mutateAsync(messageRequest)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to send message')
-        stopStreamingState()
-      }
-    },
-    [conversationId, selectedModel?.id, startStreaming, sendMessageMutation, stopStreamingState]
-  )
+      // Send the message
+      await sendMessageMutation.mutateAsync(messageRequest)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send message')
+      stopStreamingState()
+    }
+  }
 
   /**
    * Stop the current streaming response
    */
-  const stopStreaming = useCallback(() => {
+  const stopStreaming = () => {
     // Cancel the fetch request if it's in progress
     if (abortControllerRef.current) {
       abortControllerRef.current.abort()
@@ -281,54 +274,48 @@ export const useChat = (options: UseChatOptions = {}): UseChatReturn => {
 
     // Stop streaming
     stopStreamingState()
-  }, [stopStreamingState])
+  }
 
   /**
    * Create a new conversation
    */
-  const createConversation = useCallback(
-    async (data: CreateConversationRequest): Promise<string> => {
-      try {
-        const newConversation = await createConversationMutation.mutateAsync(data)
-        return newConversation.id
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to create conversation')
-        throw err
-      }
-    },
-    [createConversationMutation]
-  )
+  const createConversation = async (data: CreateConversationRequest): Promise<string> => {
+    try {
+      const newConversation = await createConversationMutation.mutateAsync(data)
+      return newConversation.id
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create conversation')
+      throw err
+    }
+  }
 
   /**
    * Update the current conversation
    */
-  const updateConversationData = useCallback(
-    async (updates: Partial<CreateConversationRequest>) => {
-      if (!conversationId) {
-        setError('No active conversation')
-        return
-      }
+  const updateConversationData = async (updates: Partial<CreateConversationRequest>) => {
+    if (!conversationId) {
+      setError('No active conversation')
+      return
+    }
 
-      try {
-        await updateConversationMutation.mutateAsync({
-          id: conversationId,
-          data: updates,
+    try {
+      await updateConversationMutation.mutateAsync({
+        id: conversationId,
+        data: updates,
+      })
+
+      // Update the conversation in the store
+      if (conversation) {
+        // Just log the update for now
+        console.log('Conversation updated:', {
+          ...conversation,
+          ...updates,
         })
-
-        // Update the conversation in the store
-        if (conversation) {
-          // Just log the update for now
-          console.log('Conversation updated:', {
-            ...conversation,
-            ...updates,
-          })
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to update conversation')
       }
-    },
-    [conversationId, conversation, updateConversationMutation]
-  )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update conversation')
+    }
+  }
 
   // Clean up on unmount
   useEffect(() => {

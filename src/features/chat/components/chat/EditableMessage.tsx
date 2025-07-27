@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/shared/ui/button'
 import { Textarea } from '@/shared/ui/textarea'
 import { cn } from '@/shared/lib/utils'
@@ -66,7 +66,7 @@ const EditableMessage = ({
   /**
    * Handle content changes
    */
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     const newContent = e.target.value
     setContent(newContent)
 
@@ -75,12 +75,12 @@ const EditableMessage = ({
       textareaRef.current.style.height = 'auto'
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
     }
-  }, [])
+  }
 
   /**
    * Handle saving the edited message
    */
-  const handleSave = useCallback(async () => {
+  async function handleSave() {
     if (content.trim() === message.content.trim()) {
       // No changes, just cancel
       onCancel()
@@ -100,27 +100,24 @@ const EditableMessage = ({
     } finally {
       setIsSaving(false)
     }
-  }, [content, message.content, onCancel, onSave, saveEdit])
+  }
 
   /**
    * Handle keyboard shortcuts
    */
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      // Save on Ctrl+Enter or Cmd+Enter
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault()
-        handleSave()
-      }
+  function handleKeyDown(e: React.KeyboardEvent) {
+    // Save on Ctrl+Enter or Cmd+Enter
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault()
+      handleSave()
+    }
 
-      // Cancel on Escape
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        onCancel()
-      }
-    },
-    [handleSave, onCancel]
-  )
+    // Cancel on Escape
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      onCancel()
+    }
+  }
 
   return (
     <div className={cn('group flex w-full gap-3 px-4 py-3', className)}>

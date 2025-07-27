@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 
 interface AuthContextType {
@@ -37,11 +37,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setLoading(false)
   }, [])
 
-  const logout = useCallback(() => {
+  function logout() {
     localStorage.removeItem('access_token')
     setToken(null)
     router.push('/login')
-  }, [router])
+  }
 
   useEffect(() => {
     if (loading) return
@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!token && !isPublic) {
       logout()
     }
-  }, [pathname, token, loading, logout])
+  }, [pathname, token, loading])
 
   const login = (newToken: string) => {
     localStorage.setItem('access_token', newToken)

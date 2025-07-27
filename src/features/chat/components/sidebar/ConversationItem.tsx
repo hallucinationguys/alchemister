@@ -30,7 +30,7 @@ import {
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import { useState, useId, useCallback } from 'react'
+import { useState, useId } from 'react'
 import { toast } from 'sonner'
 import {
   useUpdateConversationTitle,
@@ -68,27 +68,24 @@ const ConversationItem = ({
   const updateTitle = useUpdateConversationTitle()
   const deleteConversation = useDeleteConversation()
 
-  const handleClick = useCallback(() => {
+  const handleClick = () => {
     onClick(conversation)
-  }, [onClick, conversation])
+  }
 
-  const handleEdit = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault()
-      e.stopPropagation()
-      setEditTitle(conversation.title)
-      setShowEditDialog(true)
-    },
-    [conversation.title]
-  )
+  const handleEdit = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setEditTitle(conversation.title)
+    setShowEditDialog(true)
+  }
 
-  const handleDelete = useCallback((e: React.MouseEvent) => {
+  const handleDelete = (e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     setShowDeleteDialog(true)
-  }, [])
+  }
 
-  const handleTitleUpdate = useCallback(async () => {
+  async function handleTitleUpdate() {
     if (!editTitle || !editTitle.trim() || editTitle.trim() === conversation.title) {
       setShowEditDialog(false)
       return
@@ -108,9 +105,9 @@ const ConversationItem = ({
         description: 'Please try again later.',
       })
     }
-  }, [editTitle, conversation.title, conversation.id, updateTitle])
+  }
 
-  const handleConfirmDelete = useCallback(async () => {
+  async function handleConfirmDelete() {
     try {
       await deleteConversation.mutateAsync(conversation.id)
       toast.success('Conversation deleted successfully')
@@ -121,17 +118,14 @@ const ConversationItem = ({
         description: 'Please try again later.',
       })
     }
-  }, [conversation.id, deleteConversation])
+  }
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        e.preventDefault()
-        handleTitleUpdate()
-      }
-    },
-    [handleTitleUpdate]
-  )
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleTitleUpdate()
+    }
+  }
 
   return (
     <>

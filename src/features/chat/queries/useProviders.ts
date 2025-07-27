@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useSelectedModel, type AvailableModel } from '@/features/chat/hooks/use-selected-model'
 import type { ProviderResponse, UserProviderSettingResponse } from '@/features/settings/types/types'
 
@@ -167,13 +167,13 @@ export const useProviders = (options: { autoFetch?: boolean; fetchOnMount?: bool
     staleTime: 5 * 60 * 1000, // 5 minutes
   })
 
-  // Process models when providers and user settings are available
-  const models = useMemo(() => {
+  // Process models when providers and user settings are available - React 19 compiler optimizes this
+  const models = (() => {
     if (providersQuery.data && userSettingsQuery.data) {
       return processModels(providersQuery.data, userSettingsQuery.data)
     }
     return []
-  }, [providersQuery.data, userSettingsQuery.data])
+  })()
 
   // Auto-select first available model if none selected and models are available
   useEffect(() => {
@@ -203,9 +203,9 @@ export const useProviders = (options: { autoFetch?: boolean; fetchOnMount?: bool
     },
   })
 
-  // Get configured and unconfigured models
-  const configuredModels = useMemo(() => models.filter(m => m.has_api_key), [models])
-  const unconfiguredModels = useMemo(() => models.filter(m => !m.has_api_key), [models])
+  // Get configured and unconfigured models - React 19 compiler optimizes these filters
+  const configuredModels = models.filter(m => m.has_api_key)
+  const unconfiguredModels = models.filter(m => !m.has_api_key)
 
   return {
     // Data

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { Copy, Check, ThumbsUp, ThumbsDown, Edit, Trash2, RefreshCw } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { cn } from '@/shared/lib/utils'
@@ -59,7 +59,7 @@ const MessageActions = ({
   /**
    * Handle copying message to clipboard
    */
-  const handleCopyMessage = useCallback(() => {
+  function handleCopyMessage() {
     copyMessage(message)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
@@ -68,48 +68,48 @@ const MessageActions = ({
     if (onCopy) {
       onCopy()
     }
-  }, [copyMessage, message, onCopy])
+  }
 
   /**
    * Handle editing message
    */
-  const handleEditMessage = useCallback(() => {
+  function handleEditMessage() {
     startEditing(message.id)
 
     // Call the onEdit callback if provided
     if (onEdit) {
       onEdit()
     }
-  }, [message.id, startEditing, onEdit])
+  }
 
   /**
    * Handle deleting message
    */
-  const handleDeleteMessage = useCallback(() => {
+  function handleDeleteMessage() {
     deleteMessage(message.id)
 
     // Call the onDelete callback if provided
     if (onDelete) {
       onDelete()
     }
-  }, [deleteMessage, message.id, onDelete])
+  }
 
   /**
    * Handle regenerating message
    */
-  const handleRegenerateMessage = useCallback(() => {
+  function handleRegenerateMessage() {
     regenerateMessage(message.id)
 
     // Call the onRegenerate callback if provided
     if (onRegenerate) {
       onRegenerate()
     }
-  }, [message.id, regenerateMessage, onRegenerate])
+  }
 
   /**
    * Handle liking message
    */
-  const handleLikeMessage = useCallback(() => {
+  function handleLikeMessage() {
     setLiked(!liked)
     if (disliked) setDisliked(false) // Remove dislike if present
 
@@ -117,12 +117,12 @@ const MessageActions = ({
     if (onLike) {
       onLike()
     }
-  }, [liked, disliked, onLike])
+  }
 
   /**
    * Handle disliking message
    */
-  const handleDislikeMessage = useCallback(() => {
+  function handleDislikeMessage() {
     setDisliked(!disliked)
     if (liked) setLiked(false) // Remove like if present
 
@@ -130,7 +130,7 @@ const MessageActions = ({
     if (onDislike) {
       onDislike()
     }
-  }, [disliked, liked, onDislike])
+  }
 
   return (
     <div

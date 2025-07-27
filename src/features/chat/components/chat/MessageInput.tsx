@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, FormEvent, useCallback } from 'react'
+import { useRef, useState } from 'react'
 import { Send, StopCircle, Loader2, Plus } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Textarea } from '@/shared/ui/textarea'
@@ -57,66 +57,61 @@ const MessageInput = ({
   const sendMessage = useSendMessage(conversationId, onStreamEvent)
 
   /**
-   * Handle form submission
+   * Handle form submission using React 19 form actions
    */
-  const handleSubmit = useCallback(
-    (e: FormEvent<HTMLFormElement>) => {
-      e.preventDefault()
-      if (!isValidMessage(content) || streaming || sendMessage.isPending || disabled) {
-        return
-      }
+  async function handleSubmit(formData: FormData) {
+    const content = formData.get('content') as string
 
-      sendMessage.mutate({ content: content.trim() })
-      setContent('')
+    if (!isValidMessage(content) || streaming || sendMessage.isPending || disabled) {
+      return
+    }
 
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto'
-      }
-    },
-    [content, streaming, sendMessage, disabled]
-  )
+    sendMessage.mutate({ content: content.trim() })
+    setContent('')
+
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
+    }
+  }
 
   /**
    * Handle keyboard shortcuts
    */
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      // Submit on Enter (without Shift)
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault()
-        if (isValidMessage(content) && !streaming && !sendMessage.isPending && !disabled) {
-          sendMessage.mutate({ content: content.trim() })
-          setContent('')
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Submit on Enter (without Shift)
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      if (isValidMessage(content) && !streaming && !sendMessage.isPending && !disabled) {
+        sendMessage.mutate({ content: content.trim() })
+        setContent('')
 
-          if (textareaRef.current) {
-            textareaRef.current.style.height = 'auto'
-          }
+        if (textareaRef.current) {
+          textareaRef.current.style.height = 'auto'
         }
       }
-    },
-    [content, streaming, sendMessage, disabled]
-  )
+    }
+  }
 
   /**
    * Handle textarea input and auto-resize
    */
-  const handleInput = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const textarea = e.target
     setContent(textarea.value)
 
     // Auto-resize textarea
     textarea.style.height = 'auto'
     textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px'
-  }, [])
+  }
 
   /**
    * Handle stopping the streaming response
    */
-  const handleStop = useCallback(() => {
+  const handleStop = () => {
     if (onStopStreaming) {
       onStopStreaming()
     }
-  }, [onStopStreaming])
+  }
 
   // Determine button state
   const isInputDisabled = sendMessage.isPending || streaming || disabled
@@ -133,7 +128,7 @@ const MessageInput = ({
       aria-label="Message input area"
     >
       <div className="mx-auto max-w-4xl px-6 py-6">
-        <form onSubmit={handleSubmit} className="relative">
+        <form action={handleSubmit} className="relative">
           <div
             className={cn(
               'relative flex items-center gap-3 px-4 py-3 rounded-3xl bg-transparent border border-border/30',

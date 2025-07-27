@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 
 /**
  * Streaming state interface
@@ -29,33 +29,33 @@ const initialStreamingState: StreamingState = {
 export const useStreamingState = () => {
   const [streaming, setStreaming] = useState<StreamingState>(initialStreamingState)
 
-  const startStreaming = useCallback((conversationId: string, messageId: string) => {
+  const startStreaming = (conversationId: string, messageId: string) => {
     setStreaming({
       isStreaming: true,
       streamingContent: '',
       streamingMessageId: messageId,
       conversationId,
     })
-  }, [])
+  }
 
-  const updateStreamingContent = useCallback((content: string) => {
+  const updateStreamingContent = (content: string) => {
     setStreaming(prev => ({
       ...prev,
       streamingContent: content,
     }))
-  }, [])
+  }
 
-  const finalizeStreaming = useCallback((finalContent: string) => {
+  const finalizeStreaming = (finalContent: string) => {
     setStreaming(prev => ({
       ...prev,
       isStreaming: false,
       streamingContent: finalContent,
     }))
-  }, [])
+  }
 
-  const stopStreaming = useCallback(() => {
+  const stopStreaming = () => {
     setStreaming(initialStreamingState)
-  }, [])
+  }
 
   return {
     streaming,

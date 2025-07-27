@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { useEditingState } from '@/features/chat/hooks/use-editing-state'
 import { useDeleteMessage, useRegenerateMessage } from '@/features/chat/queries/useMessage'
@@ -100,7 +100,7 @@ export const useMessageActions = (
   /**
    * Copy a message's content to clipboard
    */
-  const copyMessage = useCallback((message: Message) => {
+  function copyMessage(message: Message) {
     if (!message.content) return
 
     try {
@@ -110,12 +110,12 @@ export const useMessageActions = (
       console.error('Failed to copy message:', error)
       toast.error('Failed to copy message')
     }
-  }, [])
+  }
 
   /**
    * Copy code snippet to clipboard
    */
-  const copyCode = useCallback((code: string) => {
+  function copyCode(code: string) {
     if (!code) return
 
     try {
@@ -125,13 +125,13 @@ export const useMessageActions = (
       console.error('Failed to copy code:', error)
       toast.error('Failed to copy code')
     }
-  }, [])
+  }
 
   /**
    * Extract code blocks from a message
    * This is a simple implementation that looks for code blocks between triple backticks
    */
-  const extractCodeBlocks = useCallback((content: string): { code: string; language: string }[] => {
+  function extractCodeBlocks(content: string): { code: string; language: string }[] {
     const codeBlockRegex = /```([a-zA-Z0-9]*)\n([\s\S]*?)```/g
     const codeBlocks: { code: string; language: string }[] = []
 
@@ -144,105 +144,93 @@ export const useMessageActions = (
     }
 
     return codeBlocks
-  }, [])
+  }
 
   /**
    * Start editing a message
    */
-  const startEditing = useCallback(
-    (messageId: string) => {
-      if (!conversationId) return
+  function startEditing(messageId: string) {
+    if (!conversationId) return
 
-      // Since we can't directly access the conversation from the store,
-      // we'll create an edit session with the message ID and let the component
-      // provide the content when it calls this function
-      setEditSession({
-        messageId,
-        originalContent: '', // This will be set when the component calls updateEditContent
-        editedContent: '', // This will be set when the component calls updateEditContent
-        isActive: true,
-      })
+    // Since we can't directly access the conversation from the store,
+    // we'll create an edit session with the message ID and let the component
+    // provide the content when it calls this function
+    setEditSession({
+      messageId,
+      originalContent: '', // This will be set when the component calls updateEditContent
+      editedContent: '', // This will be set when the component calls updateEditContent
+      isActive: true,
+    })
 
-      setIsEditing(true)
-      setCurrentEditMessageId(messageId)
+    setIsEditing(true)
+    setCurrentEditMessageId(messageId)
 
-      // Also update the store
-      startEditingStore(messageId)
-    },
-    [conversationId, startEditingStore]
-  )
+    // Also update the store
+    startEditingStore(messageId)
+  }
 
   /**
    * Update the content of the message being edited
    */
-  const updateEditContent = useCallback(
-    (content: string) => {
-      if (editSession) {
-        setEditSession({
-          ...editSession,
-          editedContent: content,
-        })
-      }
-    },
-    [editSession]
-  )
+  function updateEditContent(content: string) {
+    if (editSession) {
+      setEditSession({
+        ...editSession,
+        editedContent: content,
+      })
+    }
+  }
 
   /**
    * Save the edited message
    */
-  const saveEdit = useCallback(
-    (content: string) => {
-      if (!conversationId || !currentEditMessageId || !editSession) return
+  function saveEdit(content: string) {
+    if (!conversationId || !currentEditMessageId || !editSession) return
 
-      try {
-        // We'll use React Query to update the message in the next version
-        // For now, just reset the editing state
+    try {
+      // We'll use React Query to update the message in the next version
+      // For now, just reset the editing state
 
-        // Reset editing state
-        setIsEditing(false)
-        setCurrentEditMessageId(null)
-        setEditSession(null)
-        stopEditing()
+      // Reset editing state
+      setIsEditing(false)
+      setCurrentEditMessageId(null)
+      setEditSession(null)
+      stopEditing()
 
-        toast.success('Message updated')
-      } catch (error) {
-        console.error('Failed to update message:', error)
-        toast.error('Failed to update message')
-      }
-    },
-    [conversationId, currentEditMessageId, editSession, stopEditing]
-  )
+      toast.success('Message updated')
+    } catch (error) {
+      console.error('Failed to update message:', error)
+      toast.error('Failed to update message')
+    }
+  }
 
   /**
    * Cancel editing a message
    */
-  const cancelEditing = useCallback(() => {
+  function cancelEditing() {
     setIsEditing(false)
     setCurrentEditMessageId(null)
     setEditSession(null)
     stopEditing()
-  }, [stopEditing])
+  }
 
   /**
    * Delete a message
    */
-  const deleteMessage = useCallback(
-    async (messageId: string) => {
-      if (!conversationId) return
+  async function deleteMessage(messageId: string) {
+    if (!conversationId) return
 
-      try {
-        setIsDeleting(true)
-        await deleteMessageMutation.mutateAsync(messageId)
-        toast.success('Message deleted')
-      } catch (error) {
-        console.error('Failed to delete message:', error)
-        toast.error('Failed to delete message')
-      } finally {
-        setIsDeleting(false)
-      }
-    },
-    [conversationId, deleteMessageMutation]
-  )
+    try {
+      setIsDeleting(true)
+      await deleteMessageMutation.mutateAsync(messageId)
+      toast.success('Message deleted')
+    } catch (error) {
+      console.error('Failed to delete message:', error)
+      toast.error('Failed to delete message')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   /**
    * Regenerate a message
@@ -252,41 +240,38 @@ export const useMessageActions = (
   /**
    * Regenerate a message with the current content
    */
-  const regenerateMessage = useCallback(
-    async (messageId: string) => {
-      if (!conversationId) return
+  async function regenerateMessage(messageId: string) {
+    if (!conversationId) return
 
-      try {
-        setIsRegenerating(true)
+    try {
+      setIsRegenerating(true)
 
-        // Get the message content if it's being edited
-        let data = {}
-        if (editSession && editSession.messageId === messageId && editSession.isActive) {
-          data = { content: editSession.editedContent }
+      // Get the message content if it's being edited
+      let data = {}
+      if (editSession && editSession.messageId === messageId && editSession.isActive) {
+        data = { content: editSession.editedContent }
 
-          // Reset the edit session
-          setIsEditing(false)
-          setCurrentEditMessageId(null)
-          setEditSession(null)
-          stopEditing()
-        }
-
-        // Call the regenerate mutation
-        await regenerateMessageMutation.mutateAsync({
-          messageId,
-          data,
-        })
-
-        toast.success('Message regenerated')
-      } catch (error) {
-        console.error('Failed to regenerate message:', error)
-        toast.error('Failed to regenerate message')
-      } finally {
-        setIsRegenerating(false)
+        // Reset the edit session
+        setIsEditing(false)
+        setCurrentEditMessageId(null)
+        setEditSession(null)
+        stopEditing()
       }
-    },
-    [conversationId, editSession, regenerateMessageMutation, stopEditing]
-  )
+
+      // Call the regenerate mutation
+      await regenerateMessageMutation.mutateAsync({
+        messageId,
+        data,
+      })
+
+      toast.success('Message regenerated')
+    } catch (error) {
+      console.error('Failed to regenerate message:', error)
+      toast.error('Failed to regenerate message')
+    } finally {
+      setIsRegenerating(false)
+    }
+  }
 
   return {
     // Copy actions

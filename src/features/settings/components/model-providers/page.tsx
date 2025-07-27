@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState } from 'react'
 import { Button } from '@/shared/ui/button'
 import { Card, CardContent } from '@/shared/ui/card'
 import { Badge } from '@/shared/ui/badge'
@@ -19,8 +19,8 @@ const ModelProvidersPage = () => {
   const { providers, userSettings, loading, error, refetch } = useProviders()
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Filter providers based on search query
-  const filteredProviders = useMemo(() => {
+  // Filter providers based on search query - React 19 compiler optimizes this
+  const filteredProviders = (() => {
     if (!searchQuery) return providers
     return providers.filter(
       (provider: ProviderResponse) =>
@@ -32,10 +32,10 @@ const ModelProvidersPage = () => {
             model.display_name.toLowerCase().includes(searchQuery.toLowerCase())
           ))
     )
-  }, [providers, searchQuery])
+  })()
 
-  // Calculate stats
-  const stats = useMemo(() => {
+  // Calculate stats - React 19 compiler optimizes this
+  const stats = (() => {
     const connectedProviders = userSettings.filter(
       (setting: UserProviderSettingResponse) => setting.api_key_set && setting.is_active
     ).length
@@ -64,7 +64,7 @@ const ModelProvidersPage = () => {
       totalModels,
       activeModels,
     }
-  }, [providers, userSettings])
+  })()
 
   const getCombinedProviderData = (provider: ProviderResponse) => {
     const userSetting = userSettings.find(setting => setting.provider_id === provider.id)
