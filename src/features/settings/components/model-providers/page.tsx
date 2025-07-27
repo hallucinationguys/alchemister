@@ -26,9 +26,11 @@ const ModelProvidersPage = () => {
       (provider: ProviderResponse) =>
         provider.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         provider.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        provider.models.some((model: Model) =>
-          model.display_name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
+        (provider.models &&
+          Array.isArray(provider.models) &&
+          provider.models.some((model: Model) =>
+            model.display_name.toLowerCase().includes(searchQuery.toLowerCase())
+          ))
     )
   }, [providers, searchQuery])
 
@@ -37,17 +39,24 @@ const ModelProvidersPage = () => {
     const connectedProviders = userSettings.filter(
       (setting: UserProviderSettingResponse) => setting.api_key_set && setting.is_active
     ).length
+
     const totalModels = providers.reduce(
-      (acc: number, provider: ProviderResponse) => acc + provider.models.length,
+      (acc: number, provider: ProviderResponse) =>
+        acc + (provider.models && Array.isArray(provider.models) ? provider.models.length : 1),
       0
     )
+
     const activeModels = providers
       .filter(
         (provider: ProviderResponse) =>
           userSettings.find((s: UserProviderSettingResponse) => s.provider_id === provider.id)
             ?.api_key_set
       )
-      .reduce((acc: number, provider: ProviderResponse) => acc + provider.models.length, 0)
+      .reduce(
+        (acc: number, provider: ProviderResponse) =>
+          acc + (provider.models && Array.isArray(provider.models) ? provider.models.length : 1),
+        0
+      )
 
     return {
       connectedProviders,
@@ -92,7 +101,9 @@ const ModelProvidersPage = () => {
     return (
       <div className="p-6">
         <div className="text-center py-12">
-          <p className="text-destructive mb-4">{error}</p>
+          <p className="text-destructive mb-4">
+            {error instanceof Error ? error.message : String(error)}
+          </p>
           <Button onClick={() => refetch()} variant="outline">
             Try Again
           </Button>

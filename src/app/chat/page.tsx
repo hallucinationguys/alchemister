@@ -1,13 +1,15 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { MessageSquare, Sparkles, Zap, Bot } from 'lucide-react'
-import ChatLayout from '@/features/chat/components/layout/ChatLayout'
-import ChatHeader from '@/features/chat/components/chat/ChatHeader'
-import MessageInput from '@/features/chat/components/chat/MessageInput'
+import { Bot } from 'lucide-react'
+import { ChatLayout } from '@/features/chat/components/layout'
+import { ChatHeader } from '@/features/chat/components/chat'
+import { MessageInput } from '@/features/chat/components/chat'
 import { SidebarInset } from '@/shared/ui/sidebar'
-import { useChatHistory } from '@/features/chat/hooks/use-chat-history'
-import { useProviders } from '@/features/chat/hooks/use-providers'
+import { useProviders } from '@/features/chat/hooks'
+import { useChat, useMessageActions } from '@/features/chat/hooks'
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 import type {
   CreateConversationRequest,
@@ -17,47 +19,44 @@ import type {
 const ChatPage = () => {
   const router = useRouter()
   const { selectedModel, loading: modelsLoading } = useProviders()
+  const [isCreating, setIsCreating] = useState(false)
 
-  const { conversations, loading, error, hasMore, startNewChat, loadMore, refetch } =
-    useChatHistory()
+  // Use our new useChat hook without a conversationId for creating new conversations
+  const { createConversation: createNewConversation } = useChat()
 
   const handleConversationSelect = (conversation: ConversationSummaryResponse) => {
     router.push(`/chat/${conversation.id}`)
   }
 
   const handleNewConversation = async (initialMessage?: string) => {
-    if (!selectedModel) return
+    if (!selectedModel || isCreating) return
+
+    setIsCreating(true)
 
     try {
       const newConversationData: CreateConversationRequest = {
         title: 'New Conversation',
-        model_name: `${selectedModel.provider_name}/${selectedModel.name}`,
-        temperature: 0.7,
+        model_name: selectedModel.name
+          ? `${selectedModel.provider_name || ''}/${selectedModel.name}`
+          : undefined,
       }
 
-      const newConversation = await startNewChat(newConversationData)
-      if (newConversation) {
+      // Use our new hook to create the conversation
+      const newConversationId = await createNewConversation(newConversationData)
+
+      if (newConversationId) {
         const url = initialMessage
-          ? `/chat/${newConversation.id}?message=${encodeURIComponent(initialMessage)}`
-          : `/chat/${newConversation.id}`
+          ? `/chat/${newConversationId}?message=${encodeURIComponent(initialMessage)}`
+          : `/chat/${newConversationId}`
         router.push(url)
       }
     } catch (err) {
       console.error('Failed to create conversation:', err)
-    }
-  }
-
-  const handleEditConversation = (conversation: ConversationSummaryResponse) => {
-    // Note: useChatHistory automatically updates conversation titles in state
-  }
-
-  const handleDeleteConversation = (conversation: ConversationSummaryResponse) => {
-    // Note: useChatHistory automatically removes deleted conversations from state
-  }
-
-  const handleLoadMore = () => {
-    if (!loading && hasMore) {
-      loadMore()
+      toast.error('Failed to create conversation', {
+        description: 'Please try again later.',
+      })
+    } finally {
+      setIsCreating(false)
     }
   }
 
@@ -67,27 +66,7 @@ const ChatPage = () => {
     }
   }
 
-  // Suggested prompts
-  const suggestedPrompts = [
-    {
-      icon: <MessageSquare className="size-5" />,
-      title: 'Start a conversation',
-      description: "Ask me anything you'd like to know",
-      prompt: 'Hello! What can you help me with today?',
-    },
-    {
-      icon: <Sparkles className="size-5" />,
-      title: 'Creative writing',
-      description: 'Help with stories, poems, or creative content',
-      prompt: 'Help me write a creative story about a time traveler',
-    },
-    {
-      icon: <Zap className="size-5" />,
-      title: 'Problem solving',
-      description: 'Get help with analysis and solutions',
-      prompt: 'Help me analyze and solve a complex problem',
-    },
-  ]
+  // Removed unused suggestedPrompts variable
 
   const welcomeContent = (
     <div className="flex flex-1 flex-col bg-surface">
@@ -115,27 +94,22 @@ const ChatPage = () => {
 
       {/* Message Input */}
       <MessageInput
-        onSendMessage={handleSendMessage}
-        disabled={!selectedModel || modelsLoading}
+        conversationId="new"
+        disabled={!selectedModel || modelsLoading || isCreating}
         placeholder={
           !selectedModel ? 'Please select a model first...' : 'Type your message here...'
         }
+        onStreamEvent={(event: import('@/features/chat/types/conversation').StreamEvent) => {
+          if (event.type === 'content_delta' && typeof event.data === 'string') {
+            handleSendMessage(event.data)
+          }
+        }}
       />
     </div>
   )
 
   return (
-    <ChatLayout
-      conversations={conversations}
-      sidebarLoading={loading}
-      hasMore={hasMore}
-      onConversationSelect={handleConversationSelect}
-      onNewConversation={() => handleNewConversation()}
-      onEditConversation={handleEditConversation}
-      onDeleteConversation={handleDeleteConversation}
-      onLoadMore={handleLoadMore}
-      onSidebarRetry={refetch}
-    >
+    <ChatLayout currentConversationId={undefined} onConversationSelect={handleConversationSelect}>
       <SidebarInset className="flex flex-col">
         <ChatHeader title="AI Assistant" showModelSelector={true} disabled={modelsLoading} />
         {welcomeContent}

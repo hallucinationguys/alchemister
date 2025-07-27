@@ -100,7 +100,7 @@ const ModelCard = ({ provider, userSetting }: ModelCardProps) => {
           </CollapsibleTrigger>
 
           <CollapsibleContent className="mt-4">
-            {provider.models && provider.models.length > 0 ? (
+            {provider.models && Array.isArray(provider.models) && provider.models.length > 0 ? (
               <ModelList models={provider.models} providerIcon={provider.icon} />
             ) : (
               <p className="text-sm text-muted-foreground text-center py-2">
@@ -184,7 +184,9 @@ const ModelCard = ({ provider, userSetting }: ModelCardProps) => {
 
             {upsertError && (
               <div className="mt-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg">
-                <p className="text-destructive text-sm">Error: {upsertError}</p>
+                <p className="text-destructive text-sm">
+                  Error: {upsertError.message || 'An error occurred'}
+                </p>
               </div>
             )}
           </DialogContent>

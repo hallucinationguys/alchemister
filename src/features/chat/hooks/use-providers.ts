@@ -1,71 +1,46 @@
-import { useEffect } from 'react'
-import { useProvidersStore, type AvailableModel } from '@/features/chat/stores/providers'
+'use client'
+
+import { useProviders as useProvidersQuery } from '@/features/chat/queries/useProviders'
+import type { AvailableModel } from '@/features/chat/hooks/use-selected-model'
 
 interface UseProvidersOptions {
   autoFetch?: boolean
   fetchOnMount?: boolean
 }
 
+/**
+ * Hook for accessing provider data and actions
+ *
+ * This is a wrapper around the React Query hook that provides
+ * a simpler interface for components to use.
+ */
 export const useProviders = (options: UseProvidersOptions = {}) => {
-  const { autoFetch = true, fetchOnMount = true } = options
-
-  // Get state from store
-  const {
-    providers,
-    userSettings,
-    models,
-    selectedModel,
-    loading,
-    error,
-    fetchAll,
-    fetchProviders,
-    fetchUserSettings,
-    setSelectedModel,
-    invalidateCache,
-    updateUserSettings,
-    getConfiguredModels,
-    getUnconfiguredModels,
-    isDataStale,
-  } = useProvidersStore()
-
-  // Initialize data on mount
-  useEffect(() => {
-    if (autoFetch && fetchOnMount) {
-      // Only fetch if data is stale or doesn't exist
-      if (isDataStale() || providers.length === 0 || userSettings.length === 0) {
-        fetchAll()
-      }
-    }
-  }, [autoFetch, fetchOnMount, isDataStale, fetchAll, providers.length, userSettings.length])
+  // Use the React Query hook
+  const providersQuery = useProvidersQuery(options)
 
   return {
     // Data
-    providers,
-    userSettings,
-    models,
-    selectedModel,
+    providers: providersQuery.providers,
+    userSettings: providersQuery.userSettings,
+    models: providersQuery.models,
+    selectedModel: providersQuery.selectedModel,
 
     // Computed data
-    configuredModels: getConfiguredModels(),
-    unconfiguredModels: getUnconfiguredModels(),
+    configuredModels: providersQuery.configuredModels,
+    unconfiguredModels: providersQuery.unconfiguredModels,
 
     // Loading states
-    loading: loading.global,
-    loadingProviders: loading.providers,
-    loadingUserSettings: loading.userSettings,
-    error,
+    loading: providersQuery.loading,
+    error: providersQuery.error,
 
     // Actions
-    setSelectedModel,
-    fetchAll,
-    fetchProviders,
-    fetchUserSettings,
-    invalidateCache,
-    updateUserSettings,
+    setSelectedModel: providersQuery.setSelectedModel,
+    updateUserSettings: providersQuery.updateUserSettings,
 
-    // Utilities
-    refetch: () => fetchAll(true), // Force refresh for backward compatibility
-    isDataStale: isDataStale(),
+    // Refetch actions
+    refetch: providersQuery.refetchAll,
+    refetchProviders: providersQuery.refetchProviders,
+    refetchUserSettings: providersQuery.refetchUserSettings,
   }
 }
 

@@ -1,74 +1,85 @@
-import { useState } from 'react'
-import { useProvidersStore } from '@/features/chat/stores/providers'
+'use client'
+
+import { useProviders } from '@/features/chat/hooks/use-providers'
+import {
+  useProviderSettings as useProviderSettingsQuery,
+  useUpdateProviderSettings,
+  useDeleteProviderSettings,
+} from '@/features/settings/queries/useProvider'
 import type {
   UpsertUserProviderSettingRequest,
   UserProviderSettingResponse,
 } from '@/features/settings/types/types'
 
 interface UseProviderSettingsResult {
+  providerSettings: UserProviderSettingResponse[] | undefined
   saveSettings: (
     data: UpsertUserProviderSettingRequest
   ) => Promise<UserProviderSettingResponse | undefined>
+  deleteSettings: (providerId: string) => Promise<void>
   loading: boolean
-  error: string | null
+  error: Error | null
+  isUpdating: boolean
+  isDeleting: boolean
 }
 
 export const useProviderSettings = (): UseProviderSettingsResult => {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const { updateUserSettings, userSettings } = useProvidersStore()
+  // Use React Query hooks
+  const providerSettingsQuery = useProviderSettingsQuery()
+  const updateProviderSettingsMutation = useUpdateProviderSettings()
+  const deleteProviderSettingsMutation = useDeleteProviderSettings()
+
+  // Use the providers hook to get the updateUserSettings function
+  const { updateUserSettings } = useProviders()
 
   const saveSettings = async (data: UpsertUserProviderSettingRequest) => {
-    setLoading(true)
-    setError(null)
-
     try {
-      const token = localStorage.getItem('access_token')
-      const headers = {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
+      const result = await updateProviderSettingsMutation.mutateAsync(data)
+
+      // Also update the global store
+      if (result && providerSettingsQuery.data) {
+        const updatedSettings = [...providerSettingsQuery.data]
+        const existingIndex = updatedSettings.findIndex(s => s.provider_id === result.provider_id)
+
+        if (existingIndex >= 0) {
+          updatedSettings[existingIndex] = result
+        } else {
+          updatedSettings.push(result)
+        }
+
+        updateUserSettings(updatedSettings)
       }
 
-      const response = await fetch('/settings/api/settings', {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(data),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error?.message || 'Failed to save settings')
-      }
-
-      const responseData = await response.json()
-      const newSetting = responseData.data as UserProviderSettingResponse
-
-      // Update the store with the new setting
-      const updatedSettings = userSettings.map(setting =>
-        setting.provider_id === newSetting.provider_id ? newSetting : setting
-      )
-
-      // If this is a new setting, add it to the array
-      if (!userSettings.some(setting => setting.provider_id === newSetting.provider_id)) {
-        updatedSettings.push(newSetting)
-      }
-
-      updateUserSettings(updatedSettings)
-
-      return newSetting
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred'
-      setError(errorMessage)
-      console.error('Error saving settings:', err)
+      return result
+    } catch (error) {
+      console.error('Error saving provider settings:', error)
       return undefined
-    } finally {
-      setLoading(false)
+    }
+  }
+
+  const deleteSettings = async (providerId: string) => {
+    try {
+      await deleteProviderSettingsMutation.mutateAsync(providerId)
+
+      // Also update the global store
+      if (providerSettingsQuery.data) {
+        const updatedSettings = providerSettingsQuery.data.filter(
+          (setting: UserProviderSettingResponse) => setting.provider_id !== providerId
+        )
+        updateUserSettings(updatedSettings)
+      }
+    } catch (error) {
+      console.error('Error deleting provider settings:', error)
     }
   }
 
   return {
+    providerSettings: providerSettingsQuery.data,
     saveSettings,
-    loading,
-    error,
+    deleteSettings,
+    loading: providerSettingsQuery.isLoading,
+    error: providerSettingsQuery.error,
+    isUpdating: updateProviderSettingsMutation.isPending,
+    isDeleting: deleteProviderSettingsMutation.isPending,
   }
 }

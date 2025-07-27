@@ -1,20 +1,15 @@
-import { SidebarProvider } from '@/shared/ui/sidebar'
+'use client'
+
+import { useEffect } from 'react'
+import { SidebarProvider, useSidebar } from '@/shared/ui/sidebar'
 import ConversationSidebar from '@/features/chat/components/sidebar/ConversationSidebar'
+import { useIsMobile } from '@/shared/hooks/use-mobile'
 import type { ConversationSummaryResponse } from '@/features/chat/types/conversation'
 
 interface ChatLayoutProps {
   // Sidebar props
-  conversations: ConversationSummaryResponse[]
   currentConversationId?: string
-  sidebarLoading?: boolean
-  hasMore?: boolean
-  isCreating?: boolean
   onConversationSelect: (conversation: ConversationSummaryResponse) => void
-  onNewConversation: () => void
-  onEditConversation?: (conversation: ConversationSummaryResponse) => void
-  onDeleteConversation?: (conversation: ConversationSummaryResponse) => void
-  onLoadMore?: () => void
-  onSidebarRetry?: () => void
 
   // Layout props
   children: React.ReactNode
@@ -22,41 +17,69 @@ interface ChatLayoutProps {
   className?: string
 }
 
+/**
+ * The main layout component for the chat interface.
+ * Provides the overall structure with a sidebar and main content area.
+ */
 const ChatLayout = ({
-  conversations,
   currentConversationId,
-  sidebarLoading = false,
-  hasMore = false,
-  isCreating = false,
   onConversationSelect,
-  onNewConversation,
-  onEditConversation,
-  onDeleteConversation,
-  onLoadMore,
-  onSidebarRetry,
   children,
   defaultSidebarOpen = true,
   className = '',
 }: ChatLayoutProps) => {
+  const isMobile = useIsMobile()
+
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
-      <div className={`flex h-screen w-full ${className}`}>
+      <div className="flex h-screen w-full overflow-hidden bg-background" data-testid="chat-layout">
+        {/* Sidebar */}
         <ConversationSidebar
-          conversations={conversations}
           currentConversationId={currentConversationId}
-          loading={sidebarLoading}
-          hasMore={hasMore}
-          isCreating={isCreating}
           onConversationSelect={onConversationSelect}
-          onNewConversation={onNewConversation}
-          onEditConversation={onEditConversation}
-          onDeleteConversation={onDeleteConversation}
-          onLoadMore={onLoadMore}
-          onRetry={onSidebarRetry}
         />
-        {children}
+
+        {/* Main Content Area with Responsive Handling */}
+        <ChatLayoutContent>{children}</ChatLayoutContent>
       </div>
     </SidebarProvider>
+  )
+}
+
+/**
+ * Content area component that handles responsive behavior
+ */
+const ChatLayoutContent = ({ children }: { children: React.ReactNode }) => {
+  const { isMobile, openMobile, setOpenMobile } = useSidebar()
+
+  // Close mobile sidebar when content is clicked/tapped
+  const handleContentClick = () => {
+    if (isMobile && openMobile) {
+      setOpenMobile(false)
+    }
+  }
+
+  // Add keyboard accessibility - close sidebar on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isMobile && openMobile) {
+        setOpenMobile(false)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isMobile, openMobile, setOpenMobile])
+
+  return (
+    <div
+      className="flex flex-1 flex-col overflow-hidden"
+      onClick={handleContentClick}
+      role="main"
+      aria-label="Chat content area"
+    >
+      {children}
+    </div>
   )
 }
 

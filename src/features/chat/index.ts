@@ -4,11 +4,10 @@ export * from './types'
 export * from './lib'
 
 // Export hooks explicitly to avoid conflicts
-export { useChatHistory } from './hooks/use-chat-history'
-export { useChatSession } from './hooks/use-chat-session'
 export { useProviders } from './hooks/use-providers'
-export { useChatActions } from './hooks/use-chat-actions'
+export { useChat } from './hooks/use-chat'
 
-// Export stores explicitly with aliases
-export { useChatStore } from './stores/chat'
-export { useProvidersStore } from './stores/providers'
+// Export new simplified state hooks
+export { useStreamingState } from './hooks/use-streaming-state'
+export { useEditingState } from './hooks/use-editing-state'
+export { useSelectedModel, type AvailableModel } from './hooks/use-selected-model'

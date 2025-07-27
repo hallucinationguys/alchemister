@@ -1,49 +1,44 @@
+'use client'
+
+import {
+  useProfile as useProfileQuery,
+  useUpdateProfile,
+} from '@/features/settings/queries/useProfile'
 import { useState } from 'react'
-import type {
-  UpdateUserRequest,
-  UserResponse,
-  UseProfileResult,
-} from '@/features/settings/types/types'
+import type { UpdateUserRequest, UserResponse } from '@/features/settings/types/types'
 
-export const useProfile = (): UseProfileResult => {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+/**
+ * Hook for managing profile data and updates
+ */
+export function useProfile() {
+  const [isEditing, setIsEditing] = useState(false)
 
-  const updateProfile = async (data: UpdateUserRequest): Promise<UserResponse | undefined> => {
-    setLoading(true)
-    setError(null)
+  // Use the React Query hooks
+  const profileQuery = useProfileQuery()
+  const updateProfileMutation = useUpdateProfile()
+
+  const startEditing = () => setIsEditing(true)
+  const cancelEditing = () => setIsEditing(false)
+
+  const updateProfile = async (data: UpdateUserRequest) => {
     try {
-      const token = localStorage.getItem('access_token')
-      const headers = {
-        'Content-Type': 'application/json',
-        Authorization: token ? `Bearer ${token}` : '',
-      }
-
-      const response = await fetch('/settings/api/profile', {
-        method: 'PUT',
-        headers: headers,
-        body: JSON.stringify(data),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error?.message || 'Failed to update profile')
-      }
-
-      const responseData = await response.json()
-      return responseData.data.user as UserResponse
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred')
-      console.error('Error updating profile:', err)
-      return undefined
-    } finally {
-      setLoading(false)
+      await updateProfileMutation.mutateAsync(data)
+      setIsEditing(false)
+      return true
+    } catch (error) {
+      return false
     }
   }
 
   return {
+    profile: profileQuery.data,
+    isLoading: profileQuery.isLoading,
+    isError: profileQuery.isError,
+    error: profileQuery.error,
+    isEditing,
+    startEditing,
+    cancelEditing,
     updateProfile,
-    loading,
-    error,
+    isUpdating: updateProfileMutation.isPending,
   }
 }

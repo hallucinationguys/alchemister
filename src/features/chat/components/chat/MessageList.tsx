@@ -1,27 +1,41 @@
+'use client'
+
 import { useEffect, useRef, memo } from 'react'
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, AlertCircle } from 'lucide-react'
 import { ScrollArea } from '@/shared/ui/scroll-area'
+import { Button } from '@/shared/ui/button'
+import { Alert, AlertDescription } from '@/shared/ui/alert'
 import MessageItem from './MessageItem'
+import { useMessages } from '@/features/chat/queries/useMessage'
 import type { Message } from '@/features/chat/types/conversation'
 
-interface MessageListProps {
-  messages: Message[]
+/**
+ * Props for the MessageList component
+ *
+ * @property conversationId - The ID of the conversation to display messages for
+ * @property streaming - Whether a message is currently streaming
+ * @property streamingContent - The content being streamed for the current message
+ * @property className - Additional CSS classes to apply
+ */
+interface MessageListWithQueryProps {
+  conversationId: string
   streaming?: boolean
   streamingContent?: string
-  loading?: boolean
   className?: string
 }
 
-const MessageList = memo(
+const MessageListWithQuery = memo(
   ({
-    messages,
+    conversationId,
     streaming = false,
     streamingContent = '',
-    loading = false,
     className = '',
-  }: MessageListProps) => {
+  }: MessageListWithQueryProps) => {
     const messagesEndRef = useRef<HTMLDivElement>(null)
     const scrollAreaRef = useRef<HTMLDivElement>(null)
+
+    // Fetch messages using React Query
+    const { data: messages = [], isLoading, isError, refetch } = useMessages(conversationId)
 
     // Auto-scroll to bottom when new messages arrive or streaming updates
     useEffect(() => {
@@ -33,13 +47,29 @@ const MessageList = memo(
       }
     }, [messages.length, streaming, streamingContent]) // Only depend on message count and streaming state
 
-    if (loading && messages.length === 0) {
+    if (isLoading && messages.length === 0) {
       return (
         <div className={`flex flex-1 items-center justify-center ${className}`}>
           <div className="text-center">
             <div className="animate-spin rounded-full size-8 border-b-2 border-primary mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">Loading conversation...</p>
           </div>
+        </div>
+      )
+    }
+
+    if (isError) {
+      return (
+        <div className={`flex flex-1 items-center justify-center ${className}`}>
+          <Alert variant="destructive" className="max-w-md">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="flex items-center justify-between">
+              <span>Failed to load messages</span>
+              <Button variant="outline" size="sm" onClick={() => refetch()} className="ml-2">
+                Retry
+              </Button>
+            </AlertDescription>
+          </Alert>
         </div>
       )
     }
@@ -64,7 +94,7 @@ const MessageList = memo(
             </div>
           ) : (
             <div className="space-y-1">
-              {messages.map((message, index) => {
+              {messages.map((message: Message, index: number) => {
                 const isStreamingMessage =
                   streaming && index === messages.length - 1 && message.role === 'assistant'
 
@@ -72,6 +102,7 @@ const MessageList = memo(
                   <MessageItem
                     key={message.id}
                     message={message}
+                    conversationId={conversationId}
                     isStreaming={isStreamingMessage}
                     streamingContent={isStreamingMessage ? streamingContent : undefined}
                   />
@@ -86,6 +117,6 @@ const MessageList = memo(
   }
 )
 
-MessageList.displayName = 'MessageList'
+MessageListWithQuery.displayName = 'MessageListWithQuery'
 
-export default MessageList
+export default MessageListWithQuery

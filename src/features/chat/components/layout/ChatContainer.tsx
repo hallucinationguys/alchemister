@@ -1,122 +1,82 @@
-import { AlertCircle, RotateCcw } from 'lucide-react'
-import { Button } from '@/shared/ui/button'
+'use client'
+
 import { SidebarInset } from '@/shared/ui/sidebar'
-import ChatHeader from '@/features/chat/components/chat/ChatHeader'
-import MessageList from '@/features/chat/components/chat/MessageList'
-import MessageInput from '@/features/chat/components/chat/MessageInput'
+import { cn } from '@/shared/lib/utils'
+import { ChatHeader, MessageList, MessageInput } from '@/features/chat/components/chat'
 import { toast } from 'sonner'
 import { useEffect } from 'react'
-import type { Message } from '@/features/chat/types/conversation'
+import { useChat } from '@/features/chat/hooks'
 
 interface ChatContainerProps {
   // Header props
+  conversationId: string
   title?: string
-  loading?: boolean
   showBackButton?: boolean
   onBackClick?: () => void
-
-  // Messages props
-  messages?: Message[]
-  streaming?: boolean
-  streamingContent?: string
-
-  // Input props
-  onSendMessage?: (content: string) => void
-  inputDisabled?: boolean
-  onStopStreaming?: () => void
 
   // Model selector props
   showModelSelector?: boolean
 
-  // Error handling
-  error?: string | null
-  onRetry?: () => void
-
+  // Additional props
   className?: string
 }
 
+/**
+ * Container component for the chat area, including header, message list, and input.
+ * Provides fixed positioning for header and input areas.
+ */
 const ChatContainer = ({
+  conversationId,
   title = 'Chat',
-  loading = false,
   showBackButton = false,
   onBackClick,
-  messages = [],
-  streaming = false,
-  streamingContent = '',
-  onSendMessage,
-  inputDisabled = false,
-  onStopStreaming,
   showModelSelector = false,
-  error,
-  onRetry,
   className = '',
 }: ChatContainerProps) => {
-  // Show error notification when error prop changes
+  // Use our chat hook to manage chat state and actions
+  const { conversation, streaming, error, handleStreamEvent, stopStreaming } = useChat({
+    conversationId,
+    autoFetch: true,
+    fetchOnMount: true,
+  })
+
+  // Display errors as toasts
   useEffect(() => {
     if (error) {
-      toast.error(error, {
-        description: 'Please try again or check your connection.',
-      })
+      toast.error(error || 'An error occurred during streaming')
     }
   }, [error])
 
-  const handleSendMessage = (content: string) => {
-    if (onSendMessage && !inputDisabled) {
-      onSendMessage(content)
-    }
-  }
-
   return (
-    <SidebarInset className={`flex flex-col ${className}`}>
-      <ChatHeader
-        title={title}
-        loading={loading}
-        onBackClick={onBackClick}
-        showBackButton={showBackButton}
-        showModelSelector={showModelSelector}
-        disabled={loading || streaming}
+    <SidebarInset className={cn('flex flex-col', className)} data-testid="chat-container">
+      {/* Fixed Header */}
+      <div className="sticky top-0 z-10 w-full bg-background/80 backdrop-blur-sm border-b border-border">
+        <ChatHeader
+          title={title}
+          onBackClick={onBackClick}
+          showBackButton={showBackButton}
+          showModelSelector={showModelSelector}
+          disabled={streaming.isStreaming}
+        />
+      </div>
+
+      {/* Scrollable Message List */}
+      <div className="flex-1 overflow-hidden">
+        <MessageList
+          conversationId={conversationId}
+          streaming={streaming.isStreaming}
+          streamingContent={streaming.streamingContent}
+        />
+      </div>
+
+      {/* Fixed Input Area */}
+      <MessageInput
+        conversationId={conversationId}
+        onStreamEvent={handleStreamEvent}
+        streaming={streaming.isStreaming}
+        onStopStreaming={stopStreaming}
+        placeholder={streaming.isStreaming ? 'AI is responding...' : 'Type your message...'}
       />
-
-      {error && messages.length === 0 ? (
-        <div className="flex flex-1 items-center justify-center p-6">
-          <div className="text-center space-y-4">
-            <AlertCircle className="size-12 text-destructive mx-auto" />
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-foreground">Something went wrong</h3>
-              <p className="text-sm text-muted-foreground max-w-md">{error}</p>
-            </div>
-            {onRetry && (
-              <Button onClick={onRetry} variant="outline" className="mt-4">
-                <RotateCcw className="size-4 mr-2" />
-                Try again
-              </Button>
-            )}
-          </div>
-        </div>
-      ) : (
-        <>
-          <MessageList
-            messages={messages}
-            streaming={streaming}
-            streamingContent={streamingContent}
-            loading={loading}
-          />
-
-          <MessageInput
-            onSendMessage={handleSendMessage}
-            disabled={inputDisabled}
-            streaming={streaming}
-            onStopStreaming={onStopStreaming}
-            placeholder={
-              streaming
-                ? 'AI is responding...'
-                : inputDisabled
-                  ? 'Unable to send messages'
-                  : 'Type your message...'
-            }
-          />
-        </>
-      )}
     </SidebarInset>
   )
 }

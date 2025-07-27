@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import { Check, ChevronDown, Settings, AlertCircle } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
@@ -22,13 +24,22 @@ interface ModelSelectorProps {
   className?: string
 }
 
+/**
+ * Component for selecting an AI model from available providers.
+ * Shows configured and unconfigured models, with options to set up API keys.
+ */
 const ModelSelector = ({ disabled = false, className = '' }: ModelSelectorProps) => {
   const [open, setOpen] = useState(false)
-  const { models, loading, error, selectedModel, setSelectedModel, refetch } = useProviders()
-  // Using toast directly - no need for store
-
-  const configuredModels = models.filter((m: AvailableModel) => m.has_api_key)
-  const unconfiguredModels = models.filter((m: AvailableModel) => !m.has_api_key)
+  const {
+    models,
+    loading,
+    error,
+    selectedModel,
+    setSelectedModel,
+    refetch,
+    configuredModels,
+    unconfiguredModels,
+  } = useProviders()
 
   // Show error notification if there's an error loading models
   if (error) {
@@ -41,6 +52,7 @@ const ModelSelector = ({ disabled = false, className = '' }: ModelSelectorProps)
         onClick={() => refetch()}
         disabled={disabled || loading}
         className={cn('justify-between', className)}
+        aria-label="Error loading models, click to retry"
       >
         <span className="text-destructive">Error loading models</span>
         <AlertCircle className="ml-2 size-4 text-destructive" />
@@ -54,7 +66,13 @@ const ModelSelector = ({ disabled = false, className = '' }: ModelSelectorProps)
       description: 'Please configure your API keys in settings to use models.',
     })
     return (
-      <Button asChild variant="outline" disabled={disabled} className={className}>
+      <Button
+        asChild
+        variant="outline"
+        disabled={disabled}
+        className={className}
+        aria-label="Configure API keys in settings"
+      >
         <Link href="/settings/model-providers">
           <Settings className="mr-2 size-4" />
           Configure API keys
@@ -68,9 +86,7 @@ const ModelSelector = ({ disabled = false, className = '' }: ModelSelectorProps)
       setSelectedModel(model)
       setOpen(false)
     } else {
-      toast.warning('API key required', {
-        description: `Please configure your API key for ${model.provider_display_name} first.`,
-      })
+      showApiKeyError(model.provider_display_name)
     }
   }
 
@@ -81,6 +97,9 @@ const ModelSelector = ({ disabled = false, className = '' }: ModelSelectorProps)
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-label={
+            selectedModel ? `Selected model: ${selectedModel.display_name}` : 'Select a model'
+          }
           className={cn('justify-between', className)}
           disabled={disabled || loading}
         >
@@ -113,12 +132,15 @@ const ModelSelector = ({ disabled = false, className = '' }: ModelSelectorProps)
                     value={`${model.display_name} ${model.provider_display_name}`}
                     onSelect={() => handleModelSelect(model)}
                     className="cursor-pointer"
+                    aria-label={`${model.display_name} by ${model.provider_display_name}`}
+                    aria-selected={selectedModel?.id === model.id}
                   >
                     <Check
                       className={cn(
                         'mr-2 size-4',
                         selectedModel?.id === model.id ? 'opacity-100' : 'opacity-0'
                       )}
+                      aria-hidden="true"
                     />
                     <div className="flex items-center justify-between w-full">
                       <div className="flex flex-col">
@@ -147,8 +169,9 @@ const ModelSelector = ({ disabled = false, className = '' }: ModelSelectorProps)
                     value={`${model.display_name} ${model.provider_display_name}`}
                     onSelect={() => handleModelSelect(model)}
                     className="cursor-pointer opacity-60"
+                    aria-label={`${model.display_name} by ${model.provider_display_name} - needs setup`}
                   >
-                    <Settings className="mr-2 size-4" />
+                    <Settings className="mr-2 size-4" aria-hidden="true" />
                     <div className="flex items-center justify-between w-full">
                       <div className="flex flex-col">
                         <span>{model.display_name}</span>
@@ -166,7 +189,13 @@ const ModelSelector = ({ disabled = false, className = '' }: ModelSelectorProps)
                   </CommandItem>
                 ))}
                 <div className="p-2 border-t">
-                  <Button asChild variant="outline" size="sm" className="w-full">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    aria-label="Configure API keys in settings"
+                  >
                     <Link href="/settings/model-providers">
                       <Settings className="size-4 mr-2" />
                       Configure API Keys

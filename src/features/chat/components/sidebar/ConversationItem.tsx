@@ -1,4 +1,6 @@
-import { MoreHorizontal, Edit, Trash2 } from 'lucide-react'
+'use client'
+
+import { MoreHorizontal, Edit, Trash2, MessageSquare } from 'lucide-react'
 import { SidebarMenuButton, SidebarMenuAction, SidebarMenuItem } from '@/shared/ui/sidebar'
 import {
   DropdownMenu,
@@ -28,110 +30,134 @@ import {
 import { Button } from '@/shared/ui/button'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import { useState, useId } from 'react'
+import { useState, useId, useCallback } from 'react'
 import { toast } from 'sonner'
-import { useChatHistory } from '@/features/chat/hooks/use-chat-history'
+import { formatConversationDate } from '@/features/chat/lib/chat-utils'
+import {
+  useUpdateConversationTitle,
+  useDeleteConversation,
+} from '@/features/chat/queries/useConversation'
 import type { ConversationSummaryResponse } from '@/features/chat/types/conversation'
 
 interface ConversationItemProps {
   conversation: ConversationSummaryResponse
   isActive?: boolean
   onClick: (conversation: ConversationSummaryResponse) => void
-  onEdit?: (conversation: ConversationSummaryResponse) => void
-  onDelete?: (conversation: ConversationSummaryResponse) => void
   className?: string
+  role?: string
 }
 
+/**
+ * Component for displaying a single conversation item in the sidebar.
+ * Provides options to edit the title and delete the conversation.
+ */
 const ConversationItem = ({
   conversation,
   isActive = false,
   onClick,
-  onEdit,
-  onDelete,
   className = '',
+  role,
 }: ConversationItemProps) => {
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [editTitle, setEditTitle] = useState(conversation.title)
-  const [isUpdating, setIsUpdating] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
 
   const titleInputId = useId()
-  const { updateConversationTitle, deleteConversation } = useChatHistory({ autoFetch: false })
 
-  const handleClick = () => {
+  // React Query mutations
+  const updateTitle = useUpdateConversationTitle()
+  const deleteConversation = useDeleteConversation()
+
+  // Format the last message date
+  const formattedDate = conversation.last_message_at
+    ? formatConversationDate(conversation.last_message_at)
+    : formatConversationDate(conversation.id) // Fallback to conversation ID (which often contains a timestamp)
+
+  const handleClick = useCallback(() => {
     onClick(conversation)
-  }
+  }, [onClick, conversation])
 
-  const handleEdit = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    setEditTitle(conversation.title)
-    setShowEditDialog(true)
-  }
+  const handleEdit = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      setEditTitle(conversation.title)
+      setShowEditDialog(true)
+    },
+    [conversation.title]
+  )
 
-  const handleDelete = (e: React.MouseEvent) => {
+  const handleDelete = useCallback((e: React.MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     setShowDeleteDialog(true)
-  }
+  }, [])
 
-  const handleTitleUpdate = async () => {
-    if (!editTitle.trim() || editTitle.trim() === conversation.title) {
+  const handleTitleUpdate = useCallback(async () => {
+    if (!editTitle || !editTitle.trim() || editTitle.trim() === conversation.title) {
       setShowEditDialog(false)
       return
     }
 
-    setIsUpdating(true)
     try {
-      await updateConversationTitle(conversation.id, editTitle.trim())
+      await updateTitle.mutateAsync({
+        id: conversation.id,
+        title: editTitle.trim(),
+      })
+
       toast.success('Title updated successfully')
       setShowEditDialog(false)
-      onEdit?.(conversation)
     } catch (error) {
       console.error('Failed to update title:', error)
       toast.error('Failed to update title', {
         description: 'Please try again later.',
       })
-    } finally {
-      setIsUpdating(false)
     }
-  }
+  }, [editTitle, conversation.title, conversation.id, updateTitle])
 
-  const handleConfirmDelete = async () => {
-    setIsDeleting(true)
+  const handleConfirmDelete = useCallback(async () => {
     try {
-      await deleteConversation(conversation.id)
+      await deleteConversation.mutateAsync(conversation.id)
       toast.success('Conversation deleted successfully')
       setShowDeleteDialog(false)
-      onDelete?.(conversation)
     } catch (error) {
       console.error('Failed to delete conversation:', error)
       toast.error('Failed to delete conversation', {
         description: 'Please try again later.',
       })
-    } finally {
-      setIsDeleting(false)
     }
-  }
+  }, [conversation.id, deleteConversation])
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleTitleUpdate()
-    }
-  }
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        handleTitleUpdate()
+      }
+    },
+    [handleTitleUpdate]
+  )
 
   return (
     <>
-      <SidebarMenuItem className={className}>
-        <SidebarMenuButton onClick={handleClick} isActive={isActive} className="group">
-          <span className="truncate">{conversation.title}</span>
+      <SidebarMenuItem className={className} role={role}>
+        <SidebarMenuButton
+          onClick={handleClick}
+          isActive={isActive}
+          className="group relative"
+          aria-label={`Conversation: ${conversation.title}`}
+          aria-current={isActive ? 'page' : undefined}
+        >
+          <MessageSquare className="size-4 shrink-0 mr-2 text-muted-foreground group-hover:text-foreground" />
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="truncate font-medium">{conversation.title}</span>
+            <span className="text-xs text-muted-foreground truncate">{formattedDate}</span>
+          </div>
         </SidebarMenuButton>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <SidebarMenuAction>
+            <SidebarMenuAction showOnHover aria-label="Conversation options">
               <MoreHorizontal className="size-4" />
             </SidebarMenuAction>
           </DropdownMenuTrigger>
@@ -140,7 +166,10 @@ const ConversationItem = ({
               <Edit className="size-4 mr-2" />
               <span>Edit Title</span>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleDelete}>
+            <DropdownMenuItem
+              onClick={handleDelete}
+              className="text-destructive focus:text-destructive"
+            >
               <Trash2 className="size-4 mr-2" />
               <span>Delete Conversation</span>
             </DropdownMenuItem>
@@ -167,8 +196,10 @@ const ConversationItem = ({
                 onKeyDown={handleKeyDown}
                 className="col-span-3"
                 placeholder="Enter conversation title..."
-                disabled={isUpdating}
+                disabled={updateTitle.isPending}
                 autoFocus
+                maxLength={100}
+                aria-label="Conversation title"
               />
             </div>
           </div>
@@ -177,16 +208,16 @@ const ConversationItem = ({
               type="button"
               variant="outline"
               onClick={() => setShowEditDialog(false)}
-              disabled={isUpdating}
+              disabled={updateTitle.isPending}
             >
               Cancel
             </Button>
             <Button
               type="button"
               onClick={handleTitleUpdate}
-              disabled={isUpdating || !editTitle.trim()}
+              disabled={updateTitle.isPending || !editTitle.trim()}
             >
-              {isUpdating ? 'Updating...' : 'Save Changes'}
+              {updateTitle.isPending ? 'Updating...' : 'Save Changes'}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -203,13 +234,13 @@ const ConversationItem = ({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteConversation.isPending}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
-              disabled={isDeleting}
+              disabled={deleteConversation.isPending}
               className="bg-destructive hover:bg-destructive/90"
             >
-              {isDeleting ? 'Deleting...' : 'Delete Conversation'}
+              {deleteConversation.isPending ? 'Deleting...' : 'Delete Conversation'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

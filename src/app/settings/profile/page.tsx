@@ -1,5 +1,7 @@
-import ProfilePage from '@/features/settings/components/profile/page'
+'use client'
 
-export default function ProfileRoute() {
+import ProfilePage from '@/features/settings/components/profile/ProfilePage'
+
+export default function SettingsProfilePage() {
   return <ProfilePage />
 }

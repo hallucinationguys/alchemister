@@ -59,6 +59,10 @@ export interface Message {
   updated_at: string
   artifacts?: Artifact[]
   tools?: MessageTool[]
+
+  // New fields for message editing
+  is_edited?: boolean // Flag to indicate if the message has been edited
+  original_content?: string // Original content before editing
 }
 
 export interface Artifact {
@@ -101,8 +105,6 @@ export interface CreateConversationRequest {
   title: string
   model_name?: string // Use the "provider/model" format from backend
   system_prompt?: string
-  temperature?: number
-  max_tokens?: number
 }
 
 export interface PostMessageRequest {
@@ -114,38 +116,46 @@ export interface PostMessageRequest {
 export interface ConversationSummaryResponse {
   id: string
   title: string
-  created_at: string
-  updated_at: string
-  message_count: number
-  model: {
-    id: string
-    name: string
-    display_name: string
-    provider?: {
-      id: string
-      name: string
-      display_name: string
-    }
-  }
+  last_message_at?: string
+  model_id: string
 }
 
 export interface ConversationDetailResponse {
   id: string
-  user_id: string
-  model_id: string
   title: string
+  model_id: string
   system_prompt?: string
-  temperature: number
-  max_tokens?: number
-  is_active: boolean
-  created_at: string
-  updated_at: string
-  model: Model
-  messages: Message[]
+  messages: {
+    id: string
+    role: 'user' | 'assistant' | 'system'
+    content: string
+    created_at: string
+    artifacts?: {
+      id: string
+      title: string
+      type: string
+      language?: string
+      content: string
+    }[]
+  }[]
 }
 
 export interface StreamEvent {
-  type: 'message_start' | 'content_delta' | 'message_end' | 'error'
+  type: 'message_start' | 'content_delta' | 'message_end' | 'message_cancelled' | 'info' | 'error'
   data?: unknown
   error?: string
+  message?: string
+  details?: string
+  status?: number
+  code?: string
+}
+
+/**
+ * Interface for managing message editing sessions
+ */
+export interface EditSessionInfo {
+  messageId: string
+  originalContent: string
+  editedContent: string
+  isActive: boolean
 }
