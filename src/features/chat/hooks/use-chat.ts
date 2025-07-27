@@ -10,7 +10,7 @@ import {
 } from '@/features/chat/queries/useConversation'
 import { useSendMessage } from '@/features/chat/queries/useMessage'
 import { useProviders } from '@/features/chat/hooks/use-providers'
-import { type ApiError } from '@/lib/react-query/errorHandling'
+import { type ApiError } from '@/shared/lib/react-query/errorHandling'
 import type {
   Message,
   StreamEvent,

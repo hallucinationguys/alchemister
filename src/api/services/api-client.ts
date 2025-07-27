@@ -1,4 +1,4 @@
-import { getAuthHeader } from '@/lib/react-query/errorHandling'
+import { getAuthHeader } from '@/shared/lib/react-query/errorHandling'
 
 /**
  * API response interface for standardized responses

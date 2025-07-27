@@ -11,7 +11,11 @@ import {
   conversationService,
   type ConversationFilterOptions,
 } from '@/api/services/conversation-service'
-import { handleQueryError, showQueryError, type ApiError } from '@/lib/react-query/errorHandling'
+import {
+  handleQueryError,
+  showQueryError,
+  type ApiError,
+} from '@/shared/lib/react-query/errorHandling'
 import type {
   ConversationSummaryResponse,
   ConversationDetailResponse,

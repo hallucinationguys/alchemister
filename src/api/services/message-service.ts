@@ -1,6 +1,6 @@
 import { apiClient } from './api-client'
 import type { Message, PostMessageRequest, StreamEvent } from '@/features/chat/types/conversation'
-import { getAuthHeader, StreamingError } from '@/lib/react-query/errorHandling'
+import { getAuthHeader, StreamingError } from '@/shared/lib/react-query/errorHandling'
 
 const API_BASE = '/api/chat/conversations'
 

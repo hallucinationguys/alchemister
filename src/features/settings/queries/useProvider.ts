@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient, type UseQueryOptions } from '@tanstack/react-query'
 import { providerSettingsService } from '@/api/services/settings-service'
-import { handleQueryError, showQueryError } from '@/lib/react-query/errorHandling'
+import { handleQueryError, showQueryError } from '@/shared/lib/react-query/errorHandling'
 import type {
   ProviderResponse,
   UserProviderSettingResponse,

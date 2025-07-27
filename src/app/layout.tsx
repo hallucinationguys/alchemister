@@ -4,7 +4,7 @@ import './globals.css'
 import { ThemeProvider } from '@/shared/contexts/theme-provider'
 import { AuthProvider } from '@/shared/contexts/auth-provider'
 import { Toaster } from '@/shared/ui/sonner'
-import { ReactQueryProvider } from '@/lib/react-query'
+import { ReactQueryProvider } from '@/shared/lib/react-query'
 
 const inter = Inter({ subsets: ['latin'] })
 

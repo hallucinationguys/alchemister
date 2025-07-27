@@ -1,5 +1,5 @@
 import { apiClient } from './api-client'
-import { handleQueryError } from '@/lib/react-query/errorHandling'
+import { handleQueryError } from '@/shared/lib/react-query/errorHandling'
 import type {
   ProviderResponse,
   UserProviderSettingResponse,

@@ -8,7 +8,7 @@ import {
   type UseQueryOptions,
 } from '@tanstack/react-query'
 import { messageService } from '@/api/services/message-service'
-import { handleQueryError, showQueryError } from '@/lib/react-query/errorHandling'
+import { handleQueryError, showQueryError } from '@/shared/lib/react-query/errorHandling'
 import { v4 as uuidv4 } from 'uuid'
 import { useRef } from 'react'
 import type { Message, PostMessageRequest, StreamEvent } from '@/features/chat/types/conversation'
