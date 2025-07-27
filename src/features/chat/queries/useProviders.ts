@@ -17,7 +17,8 @@ export const providerKeys = {
 }
 
 /**
- * Helper function to process models from providers and settings
+ * Helper function to process providers and user settings into available models for selection.
+ * Since backend ProviderResponse no longer includes models, we map providers directly.
  */
 const processModels = (
   providers: ProviderResponse[],
@@ -27,47 +28,35 @@ const processModels = (
 
   providers.forEach(provider => {
     const userSetting = userSettings.find(s => s.provider_id === provider.id)
+    // Determine if the provider has an active API key configured by the user
     const hasApiKey = userSetting?.api_key_set && userSetting?.is_active
 
-    // If provider has models, use them
-    if (provider.models && Array.isArray(provider.models)) {
-      provider.models.forEach(model => {
-        if (model.is_active) {
-          availableModels.push({
-            id: model.id,
-            name: model.name,
-            display_name: model.display_name,
-            provider_name: provider.name,
-            provider_display_name: provider.display_name,
-            provider_id: provider.id,
-            is_active: model.is_active,
-            has_api_key: hasApiKey || false,
-          })
-        }
-      })
-    } else {
-      // If provider doesn't have models, create a default model
+    // Map provider directly to AvailableModel, using provider details as model details
+    // This assumes the UI will select a provider, not a specific model within a provider.
+    if (provider.is_active) {
+      // Only consider active providers
       availableModels.push({
-        id: provider.id,
-        name: provider.name,
-        display_name: provider.display_name,
+        id: provider.id, // Use provider ID as the model ID
+        name: provider.name, // Use provider name
+        display_name: provider.display_name, // Use provider display name
         provider_name: provider.name,
         provider_display_name: provider.display_name,
         provider_id: provider.id,
         is_active: provider.is_active,
-        has_api_key: hasApiKey || false,
+        has_api_key: hasApiKey || false, // Indicate if the provider is configured by the user
       })
     }
   })
 
-  // Sort models: configured models first, then by provider name, then by model name
+  // Sort models: configured models first, then by provider display name
   availableModels.sort((a, b) => {
     if (a.has_api_key !== b.has_api_key) {
-      return b.has_api_key ? 1 : -1
+      return b.has_api_key ? 1 : -1 // Configured models first
     }
     if (a.provider_display_name !== b.provider_display_name) {
       return a.provider_display_name.localeCompare(b.provider_display_name)
     }
+    // If provider names are the same, sort by model display name (which is the provider display name here)
     return a.display_name.localeCompare(b.display_name)
   })
 

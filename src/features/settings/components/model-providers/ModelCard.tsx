@@ -35,7 +35,6 @@ const ModelCard = ({ provider, userSetting }: ModelCardProps) => {
   const [showModels, setShowModels] = useState(false)
   const [showSetupDialog, setShowSetupDialog] = useState(false)
   const [apiKey, setApiKey] = useState('')
-  const [baseURL, setBaseURL] = useState(userSetting?.api_base_override || '')
 
   const { saveSettings, loading: upsertLoading, error: upsertError } = useProviderSettings()
 
@@ -44,7 +43,6 @@ const ModelCard = ({ provider, userSetting }: ModelCardProps) => {
       const result = await saveSettings({
         provider_id: provider.id,
         api_key: apiKey,
-        api_base_override: baseURL,
       })
 
       // Only close dialog if save was successful
@@ -155,20 +153,6 @@ const ModelCard = ({ provider, userSetting }: ModelCardProps) => {
                   {hasApiKey
                     ? 'Your API key is securely stored. Enter a new one to replace it.'
                     : "Get your API key from the provider's dashboard."}
-                </p>
-              </div>
-
-              {/* Base URL Override */}
-              <div className="space-y-4">
-                <Label htmlFor="baseURL">API Base URL (Optional)</Label>
-                <Input
-                  id="baseURL"
-                  value={baseURL}
-                  onChange={e => setBaseURL(e.target.value)}
-                  placeholder="Leave blank to use default endpoint"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Custom endpoint for proxy or regional deployments.
                 </p>
               </div>
             </div>

@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!token && !isPublic) {
       logout()
     }
-  }, [pathname, token, loading])
+  }, [pathname, token, loading, logout])
 
   const login = (newToken: string) => {
     localStorage.setItem('access_token', newToken)

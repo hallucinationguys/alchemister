@@ -13,7 +13,6 @@ export interface ProviderResponse {
   name: string
   display_name: string
   is_active: boolean
-  models: Model[]
   icon?: string
   tags?: string[]
   color?: { bg: string; border: string; text: string }
@@ -26,14 +25,12 @@ export interface UserProviderSettingResponse {
   provider_display_name: string
   is_active: boolean
   api_key_set: boolean
-  api_base_override: string | null
   updated_at: string
 }
 
 export interface UpsertUserProviderSettingRequest {
   provider_id: string
   api_key: string
-  api_base_override?: string
   is_active?: boolean
 }
 
@@ -70,6 +67,7 @@ export interface GetUserResponse {
 export interface EnhancedProviderResponse extends ProviderResponse {
   brandIcon?: string
   color?: { bg: string; border: string; text: string }
+  models?: Model[]
 }
 
 // API Response wrapper types

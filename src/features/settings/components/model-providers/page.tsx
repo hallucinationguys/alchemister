@@ -25,45 +25,8 @@ const ModelProvidersPage = () => {
     return providers.filter(
       (provider: ProviderResponse) =>
         provider.display_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        provider.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (provider.models &&
-          Array.isArray(provider.models) &&
-          provider.models.some((model: Model) =>
-            model.display_name.toLowerCase().includes(searchQuery.toLowerCase())
-          ))
+        provider.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
-  })()
-
-  // Calculate stats - React 19 compiler optimizes this
-  const stats = (() => {
-    const connectedProviders = userSettings.filter(
-      (setting: UserProviderSettingResponse) => setting.api_key_set && setting.is_active
-    ).length
-
-    const totalModels = providers.reduce(
-      (acc: number, provider: ProviderResponse) =>
-        acc + (provider.models && Array.isArray(provider.models) ? provider.models.length : 1),
-      0
-    )
-
-    const activeModels = providers
-      .filter(
-        (provider: ProviderResponse) =>
-          userSettings.find((s: UserProviderSettingResponse) => s.provider_id === provider.id)
-            ?.api_key_set
-      )
-      .reduce(
-        (acc: number, provider: ProviderResponse) =>
-          acc + (provider.models && Array.isArray(provider.models) ? provider.models.length : 1),
-        0
-      )
-
-    return {
-      connectedProviders,
-      totalProviders: providers.length,
-      totalModels,
-      activeModels,
-    }
   })()
 
   const getCombinedProviderData = (provider: ProviderResponse) => {

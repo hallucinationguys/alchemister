@@ -70,7 +70,7 @@ const ConversationList = ({
         observerRef.current.disconnect()
       }
     }
-  }, [hasMore, loading, onLoadMore])
+  }, [hasMore, loading, onLoadMore, setupObserver])
 
   // Show loading skeletons when initially loading
   if (loading && conversations.length === 0) {
