@@ -173,7 +173,7 @@ const ConversationSidebar = ({
       <SidebarFooter>
         <Button
           variant="outline"
-          className="w-full"
+          className="w-full h-9 text-sidebar-foreground border-border"
           onClick={handleSettingsClick}
           aria-label="Settings"
         >

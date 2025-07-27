@@ -1,6 +1,6 @@
 'use client'
 
-import { MoreHorizontal, Edit, Trash2, MessageSquare } from 'lucide-react'
+import { MoreVertical, Edit, Trash2 } from 'lucide-react'
 import { SidebarMenuButton, SidebarMenuAction, SidebarMenuItem } from '@/shared/ui/sidebar'
 import {
   DropdownMenu,
@@ -32,7 +32,6 @@ import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
 import { useState, useId, useCallback } from 'react'
 import { toast } from 'sonner'
-import { formatConversationDate } from '@/features/chat/lib/chat-utils'
 import {
   useUpdateConversationTitle,
   useDeleteConversation,
@@ -61,17 +60,13 @@ const ConversationItem = ({
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [editTitle, setEditTitle] = useState(conversation.title)
+  const [isHovered, setIsHovered] = useState(false)
 
   const titleInputId = useId()
 
   // React Query mutations
   const updateTitle = useUpdateConversationTitle()
   const deleteConversation = useDeleteConversation()
-
-  // Format the last message date
-  const formattedDate = conversation.last_message_at
-    ? formatConversationDate(conversation.last_message_at)
-    : formatConversationDate(conversation.id) // Fallback to conversation ID (which often contains a timestamp)
 
   const handleClick = useCallback(() => {
     onClick(conversation)
@@ -140,41 +135,64 @@ const ConversationItem = ({
 
   return (
     <>
-      <SidebarMenuItem className={className} role={role}>
+      <SidebarMenuItem
+        className={className}
+        role={role}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <SidebarMenuButton
           onClick={handleClick}
           isActive={isActive}
-          className="group relative"
+          className={`
+              flex-1 items-center
+              ${
+                isActive
+                  ? 'bg-sidebar-accent text-sidebar-accent-foreground shadow-sm'
+                  : 'text-muted-foreground'
+              }
+            `}
           aria-label={`Conversation: ${conversation.title}`}
           aria-current={isActive ? 'page' : undefined}
         >
-          <MessageSquare className="size-4 shrink-0 mr-2 text-muted-foreground group-hover:text-foreground" />
           <div className="flex flex-col min-w-0 flex-1">
-            <span className="truncate font-medium">{conversation.title}</span>
-            <span className="text-xs text-muted-foreground truncate">{formattedDate}</span>
+            <span
+              className={`
+                truncate font-medium
+                ${isActive ? 'text-sidebar-accent-foreground' : 'text-foreground'}
+              `}
+            >
+              {conversation.title}
+            </span>
           </div>
         </SidebarMenuButton>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuAction showOnHover aria-label="Conversation options">
-              <MoreHorizontal className="size-4" />
-            </SidebarMenuAction>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent side="right" align="start">
-            <DropdownMenuItem onClick={handleEdit}>
-              <Edit className="size-4 mr-2" />
-              <span>Edit Title</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={handleDelete}
-              className="text-destructive focus:text-destructive"
-            >
-              <Trash2 className="size-4 mr-2" />
-              <span>Delete Conversation</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Only show menu when this specific item is hovered */}
+        {isHovered && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuAction
+                aria-label="Conversation options"
+                className={`
+                    rounded-md p-1
+                    ${isActive ? 'text-sidebar-accent-foreground' : 'text-muted-foreground'}
+                  `}
+              >
+                <MoreVertical className="size-4" />
+              </SidebarMenuAction>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="right" align="start" className="w-48">
+              <DropdownMenuItem onClick={handleEdit}>
+                <Edit className="size-4 mr-2" />
+                <span>Edit Title</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+                <Trash2 className="size-4 mr-2" />
+                <span>Delete Conversation</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </SidebarMenuItem>
 
       {/* Edit Title Dialog */}
@@ -238,7 +256,7 @@ const ConversationItem = ({
             <AlertDialogAction
               onClick={handleConfirmDelete}
               disabled={deleteConversation.isPending}
-              className="bg-destructive hover:bg-destructive/90"
+              className="bg-destructive"
             >
               {deleteConversation.isPending ? 'Deleting...' : 'Delete Conversation'}
             </AlertDialogAction>

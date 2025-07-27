@@ -1,5 +1,8 @@
 export { default as ChatHeader } from './ChatHeader'
+export { default as ChatLoadingState } from './ChatLoadingState'
+export { default as ChatOnboarding } from './ChatOnboarding'
 export { default as EditableMessage } from './EditableMessage'
+export { default as MarkdownRenderer } from './MarkdownRenderer'
 export { default as MessageActions } from './MessageActions'
 export { default as MessageInput } from './MessageInput'
 export { default as MessageItem } from './MessageItem'

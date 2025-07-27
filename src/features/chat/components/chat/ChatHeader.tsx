@@ -3,6 +3,7 @@
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { SidebarTrigger } from '@/shared/ui/sidebar'
+import { cn } from '@/shared/lib/utils'
 import ModelSelector from './ModelSelector'
 
 /**
@@ -10,7 +11,6 @@ import ModelSelector from './ModelSelector'
  *
  * @property title - The title to display in the header
  * @property loading - Whether the header is in a loading state
- * @property onBackClick - Callback for when the back button is clicked
  * @property showBackButton - Whether to show the back button
  * @property showModelSelector - Whether to show the model selector
  * @property disabled - Whether the header controls are disabled
@@ -19,7 +19,6 @@ import ModelSelector from './ModelSelector'
 interface ChatHeaderProps {
   title?: string
   loading?: boolean
-  onBackClick?: () => void
   showBackButton?: boolean
   showModelSelector?: boolean
   disabled?: boolean
@@ -40,7 +39,6 @@ interface ChatHeaderProps {
 const ChatHeader = ({
   title = 'Chat',
   loading = false,
-  onBackClick,
   showBackButton = false,
   showModelSelector = false,
   disabled = false,
@@ -48,42 +46,34 @@ const ChatHeader = ({
 }: ChatHeaderProps) => {
   return (
     <header
-      className={`sticky top-0 z-50 flex h-16 shrink-0 items-center justify-between px-4 backdrop-blur bg-background/70 ${className}`}
+      className={cn(
+        'sticky top-0 z-50 flex h-16 shrink-0 items-center justify-between px-6',
+        'bg-background/80 backdrop-blur-sm',
+        className
+      )}
       role="banner"
       aria-label="Chat header"
     >
       {/* Left side - Navigation */}
-      <div className="flex items-center gap-2">
-        <SidebarTrigger className="-ml-1" />
+      <div className="flex items-center gap-3">
+        <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
 
-        {showBackButton && onBackClick && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onBackClick}
-            aria-label="Go back"
-            className="mr-1"
-          >
-            <ArrowLeft className="size-4" />
-          </Button>
-        )}
-
-        <div className="flex items-center gap-2">
+        <div className="flex items-center ">
           {loading ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center ">
               <div className="size-2 rounded-full bg-primary animate-pulse" />
-              <h1 className="text-lg font-semibold text-muted-foreground">Loading...</h1>
+              <h1 className="text-lg font-medium text-muted-foreground">Loading...</h1>
             </div>
           ) : (
-            <h1 className="text-lg font-semibold text-foreground">{title}</h1>
+            <h1 className="text-lg font-medium text-foreground truncate">{title}</h1>
           )}
         </div>
       </div>
 
       {/* Right side - Model Selector */}
       {showModelSelector && (
-        <div className="flex items-center gap-4">
-          <ModelSelector disabled={disabled} className="min-w-[200px]" />
+        <div className="flex items-center">
+          <ModelSelector disabled={disabled} className="min-w-[180px]" />
         </div>
       )}
     </header>

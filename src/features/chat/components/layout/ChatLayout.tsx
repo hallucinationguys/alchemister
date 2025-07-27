@@ -20,6 +20,7 @@ interface ChatLayoutProps {
 /**
  * The main layout component for the chat interface.
  * Provides the overall structure with a sidebar and main content area.
+ * Optimized for ChatGPT-like scrolling experience.
  */
 const ChatLayout = ({
   currentConversationId,
@@ -28,11 +29,9 @@ const ChatLayout = ({
   defaultSidebarOpen = true,
   className = '',
 }: ChatLayoutProps) => {
-  const isMobile = useIsMobile()
-
   return (
     <SidebarProvider defaultOpen={defaultSidebarOpen}>
-      <div className="flex h-screen w-full overflow-hidden bg-background" data-testid="chat-layout">
+      <div className="flex h-screen w-full bg-background" data-testid="chat-layout">
         {/* Sidebar */}
         <ConversationSidebar
           currentConversationId={currentConversationId}
@@ -48,6 +47,7 @@ const ChatLayout = ({
 
 /**
  * Content area component that handles responsive behavior
+ * Provides proper height and overflow management for scrolling
  */
 const ChatLayoutContent = ({ children }: { children: React.ReactNode }) => {
   const { isMobile, openMobile, setOpenMobile } = useSidebar()
@@ -73,7 +73,7 @@ const ChatLayoutContent = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div
-      className="flex flex-1 flex-col overflow-hidden"
+      className="flex flex-1 flex-col h-screen relative"
       onClick={handleContentClick}
       role="main"
       aria-label="Chat content area"

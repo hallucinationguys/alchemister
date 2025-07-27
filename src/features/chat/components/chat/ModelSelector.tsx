@@ -100,7 +100,7 @@ const ModelSelector = ({ disabled = false, className = '' }: ModelSelectorProps)
           aria-label={
             selectedModel ? `Selected model: ${selectedModel.display_name}` : 'Select a model'
           }
-          className={cn('justify-between', className)}
+          className={cn('justify-between h-9 text-sm', className)}
           disabled={disabled || loading}
         >
           {loading ? (

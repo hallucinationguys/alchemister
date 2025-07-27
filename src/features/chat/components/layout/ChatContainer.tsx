@@ -12,7 +12,6 @@ interface ChatContainerProps {
   conversationId: string
   title?: string
   showBackButton?: boolean
-  onBackClick?: () => void
 
   // Model selector props
   showModelSelector?: boolean
@@ -23,18 +22,17 @@ interface ChatContainerProps {
 
 /**
  * Container component for the chat area, including header, message list, and input.
- * Provides fixed positioning for header and input areas.
+ * Optimized for ChatGPT-like scrolling experience with proper height management.
  */
 const ChatContainer = ({
   conversationId,
   title = 'Chat',
   showBackButton = false,
-  onBackClick,
   showModelSelector = false,
   className = '',
 }: ChatContainerProps) => {
   // Use our chat hook to manage chat state and actions
-  const { conversation, streaming, error, handleStreamEvent, stopStreaming } = useChat({
+  const { streaming, error, handleStreamEvent, stopStreaming } = useChat({
     conversationId,
     autoFetch: true,
     fetchOnMount: true,
@@ -48,20 +46,24 @@ const ChatContainer = ({
   }, [error])
 
   return (
-    <SidebarInset className={cn('flex flex-col', className)} data-testid="chat-container">
-      {/* Fixed Header */}
-      <div className="sticky top-0 z-10 w-full bg-background/80 backdrop-blur-sm border-b border-border">
-        <ChatHeader
-          title={title}
-          onBackClick={onBackClick}
-          showBackButton={showBackButton}
-          showModelSelector={showModelSelector}
-          disabled={streaming.isStreaming}
-        />
-      </div>
+    <SidebarInset
+      className={cn('flex flex-col h-full relative', className)}
+      data-testid="chat-container"
+    >
+      {/* Header - Clean design without borders */}
+      {title && (
+        <div className="flex-shrink-0 z-20 bg-background">
+          <ChatHeader
+            title={title}
+            showBackButton={showBackButton}
+            showModelSelector={showModelSelector}
+            disabled={streaming.isStreaming}
+          />
+        </div>
+      )}
 
-      {/* Scrollable Message List */}
-      <div className="flex-1 overflow-hidden">
+      {/* Scrollable Message Area - Takes remaining height */}
+      <div className="flex-1 min-h-0">
         <MessageList
           conversationId={conversationId}
           streaming={streaming.isStreaming}
@@ -75,7 +77,7 @@ const ChatContainer = ({
         onStreamEvent={handleStreamEvent}
         streaming={streaming.isStreaming}
         onStopStreaming={stopStreaming}
-        placeholder={streaming.isStreaming ? 'AI is responding...' : 'Type your message...'}
+        placeholder={streaming.isStreaming ? 'AI is responding...' : 'Ask anything'}
       />
     </SidebarInset>
   )

@@ -99,7 +99,7 @@ const ConversationList = ({
   }
 
   return (
-    <SidebarMenu className={className} aria-label="Conversation list" role="list">
+    <SidebarMenu className={`space-y-2 ${className}`} aria-label="Conversation list" role="list">
       {conversations.map(conversation => {
         // Ensure conversation has an id to use as key
         if (!conversation || !conversation.id) {
@@ -136,7 +136,7 @@ const ConversationList = ({
           <SidebarMenuButton
             onClick={onLoadMore}
             disabled={loading}
-            className="text-center justify-center text-muted-foreground hover:text-foreground"
+            className="text-center justify-center text-muted-foreground"
             aria-label="Load more conversations"
           >
             Load more

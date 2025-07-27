@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState, FormEvent, useCallback } from 'react'
-import { Send, StopCircle, Loader2 } from 'lucide-react'
+import { Send, StopCircle, Loader2, Plus } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { Textarea } from '@/shared/ui/textarea'
 import { cn } from '@/shared/lib/utils'
@@ -125,19 +125,43 @@ const MessageInput = ({
   return (
     <div
       className={cn(
-        'sticky bottom-0 z-10 bg-background/80 backdrop-blur-sm border-t border-border',
+        'fixed bottom-0 right-0 z-30 bg-background/80 backdrop-blur-sm',
+        'left-0 md:left-[var(--sidebar-width,0px)]',
+        'transition-[left] duration-200 ease-linear',
         className
       )}
       aria-label="Message input area"
     >
-      <div className="mx-auto max-w-4xl px-4 py-4">
+      <div className="mx-auto max-w-4xl px-6 py-6">
         <form onSubmit={handleSubmit} className="relative">
           <div
             className={cn(
-              'relative flex items-end gap-2 p-3 rounded-2xl border border-input',
-              'transition-all duration-200 focus-within:border-ring focus-within:shadow-md'
+              'relative flex items-center gap-3 px-4 py-3 rounded-3xl bg-transparent border border-border/30',
+              'focus-within:border-border focus-within:shadow-sm',
+              'hover:border-border/50'
             )}
           >
+            {/* Add/Plus button */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={isInputDisabled}
+                  className={cn(
+                    'shrink-0 size-8 rounded-full p-0',
+                    'text-muted-foreground hover:text-foreground hover:bg-accent/50',
+                    'transition-all duration-200'
+                  )}
+                  aria-label="Add content"
+                >
+                  <Plus className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Add content</TooltipContent>
+            </Tooltip>
+
             <Textarea
               ref={textareaRef}
               name="content"
@@ -146,74 +170,74 @@ const MessageInput = ({
               onKeyDown={handleKeyDown}
               placeholder={placeholder}
               disabled={isInputDisabled}
+              background="transparent"
               className={cn(
-                'resize-none min-h-[40px] max-h-[150px] overflow-y-auto',
-                'placeholder:text-muted-foreground focus-visible:ring-0 focus-visible:ring-offset-0',
-                'border-0 shadow-none focus-visible:shadow-none'
+                'flex-1 resize-none min-h-[24px] max-h-[120px] overflow-y-auto',
+                'placeholder:text-muted-foreground/60 text-foreground',
+                'focus-visible:ring-0 focus-visible:ring-offset-0 border-0 shadow-none focus-visible:shadow-none',
+                'text-base leading-6 py-0'
               )}
               rows={1}
               aria-label="Message input"
             />
 
-            {streaming ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="button"
-                    onClick={handleStop}
-                    disabled={!onStopStreaming}
-                    className={cn(
-                      'shrink-0 size-9 rounded-full',
-                      'bg-destructive hover:bg-destructive/90 text-destructive-foreground',
-                      'shadow-sm transition-all duration-200',
-                      'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
-                    )}
-                    aria-label="Stop generating response"
-                  >
-                    <StopCircle className="size-4" aria-hidden="true" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Stop generating</TooltipContent>
-              </Tooltip>
-            ) : sendMessage.isPending ? (
-              <Button
-                type="button"
-                disabled
-                className={cn(
-                  'shrink-0 size-9 rounded-full',
-                  'bg-muted text-muted-foreground',
-                  'shadow-sm transition-all duration-200'
-                )}
-                aria-label="Sending message"
-              >
-                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-              </Button>
-            ) : (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    type="submit"
-                    disabled={!canSubmit}
-                    className={cn(
-                      'shrink-0 size-9 rounded-full',
-                      'bg-primary hover:bg-primary/90 disabled:bg-muted text-primary-foreground',
-                      'shadow-sm transition-all duration-200 disabled:cursor-not-allowed',
-                      'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
-                    )}
-                    aria-label="Send message"
-                  >
-                    <Send className="size-4" aria-hidden="true" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>{canSubmit ? 'Send message' : 'Type a message'}</TooltipContent>
-              </Tooltip>
-            )}
-          </div>
-
-          {/* Character count and model info could be added here */}
-          <div className="flex justify-between items-center mt-1 px-2 text-xs text-muted-foreground">
-            <div>{/* Optional: Add character count here */}</div>
-            <div>{/* Optional: Add model info here */}</div>
+            {/* Right side buttons */}
+            <div className="flex items-center gap-1">
+              {/* Send/Stop button */}
+              {streaming ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      onClick={handleStop}
+                      disabled={!onStopStreaming}
+                      className={cn(
+                        'shrink-0 size-8 rounded-full p-0',
+                        'bg-foreground hover:bg-foreground/90 text-background',
+                        'transition-all duration-200'
+                      )}
+                      aria-label="Stop generating response"
+                    >
+                      <StopCircle className="size-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Stop generating</TooltipContent>
+                </Tooltip>
+              ) : sendMessage.isPending ? (
+                <Button
+                  type="button"
+                  disabled
+                  className={cn(
+                    'shrink-0 size-8 rounded-full p-0',
+                    'bg-muted text-muted-foreground',
+                    'transition-all duration-200'
+                  )}
+                  aria-label="Sending message"
+                >
+                  <Loader2 className="size-4 animate-spin" />
+                </Button>
+              ) : (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="submit"
+                      disabled={!canSubmit}
+                      className={cn(
+                        'shrink-0 size-8 rounded-full p-0',
+                        canSubmit
+                          ? 'bg-foreground hover:bg-foreground/90 text-background'
+                          : 'bg-muted text-muted-foreground cursor-not-allowed',
+                        'transition-all duration-200'
+                      )}
+                      aria-label="Send message"
+                    >
+                      <Send className="size-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>{canSubmit ? 'Send message' : 'Type a message'}</TooltipContent>
+                </Tooltip>
+              )}
+            </div>
           </div>
         </form>
       </div>

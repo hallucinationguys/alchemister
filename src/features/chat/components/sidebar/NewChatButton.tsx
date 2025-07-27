@@ -23,18 +23,20 @@ const NewChatButton = ({
 }: NewChatButtonProps) => {
   return (
     <Button
-      variant="outline"
+      variant="default"
       onClick={onClick}
       disabled={loading || disabled}
       className={cn(
-        'w-full transition-all duration-200 hover:bg-primary/10 hover:text-primary',
-        'focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
-        loading && 'opacity-70',
+        'w-full bg-primary text-primary-foreground font-medium',
+        'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        'shadow-sm',
+        loading && 'opacity-70 cursor-not-allowed',
+        disabled && 'opacity-50 cursor-not-allowed',
         className
       )}
       aria-label="Create new chat"
       aria-busy={loading}
-      aria-disabled={disabled}
+      aria-disabled={disabled || loading}
     >
       {loading ? (
         <div className="flex items-center justify-center gap-2 w-full">
@@ -43,8 +45,8 @@ const NewChatButton = ({
         </div>
       ) : (
         <div className="flex items-center justify-center gap-2 w-full">
-          <Plus className="size-4 shrink-0" />
-          <span>New Chat</span>
+          <Plus className="size-5 shrink-0" />
+          <span className="font-medium">New Chat</span>
         </div>
       )}
     </Button>

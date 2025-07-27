@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { Copy, Check, Edit, Trash2, RefreshCw } from 'lucide-react'
+import { Copy, Check, ThumbsUp, ThumbsDown, Edit, Trash2, RefreshCw } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
 import { cn } from '@/shared/lib/utils'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/shared/ui/tooltip'
@@ -16,6 +16,8 @@ import type { Message } from '@/features/chat/types/conversation'
  * @property className - Additional CSS classes to apply
  * @property onEdit - Optional callback when the edit action is triggered
  * @property onCopy - Optional callback when the copy action is triggered
+ * @property onLike - Optional callback when the like action is triggered
+ * @property onDislike - Optional callback when the dislike action is triggered
  * @property onDelete - Optional callback when the delete action is triggered
  * @property onRegenerate - Optional callback when the regenerate action is triggered
  */
@@ -25,6 +27,8 @@ interface MessageActionsProps {
   className?: string
   onEdit?: () => void
   onCopy?: () => void
+  onLike?: () => void
+  onDislike?: () => void
   onDelete?: () => void
   onRegenerate?: () => void
 }
@@ -38,10 +42,14 @@ const MessageActions = ({
   className = '',
   onEdit,
   onCopy,
+  onLike,
+  onDislike,
   onDelete,
   onRegenerate,
 }: MessageActionsProps) => {
   const [copied, setCopied] = useState(false)
+  const [liked, setLiked] = useState(false)
+  const [disliked, setDisliked] = useState(false)
   const isAssistant = message.role === 'assistant'
 
   // Use our message actions hook
@@ -98,6 +106,32 @@ const MessageActions = ({
     }
   }, [message.id, regenerateMessage, onRegenerate])
 
+  /**
+   * Handle liking message
+   */
+  const handleLikeMessage = useCallback(() => {
+    setLiked(!liked)
+    if (disliked) setDisliked(false) // Remove dislike if present
+
+    // Call the onLike callback if provided
+    if (onLike) {
+      onLike()
+    }
+  }, [liked, disliked, onLike])
+
+  /**
+   * Handle disliking message
+   */
+  const handleDislikeMessage = useCallback(() => {
+    setDisliked(!disliked)
+    if (liked) setLiked(false) // Remove like if present
+
+    // Call the onDislike callback if provided
+    if (onDislike) {
+      onDislike()
+    }
+  }, [disliked, liked, onDislike])
+
   return (
     <div
       className={cn('flex items-center gap-1', className)}
@@ -111,114 +145,74 @@ const MessageActions = ({
             variant="ghost"
             size="sm"
             onClick={handleCopyMessage}
-            aria-label="Copy message"
+            aria-label={copied ? 'Message copied to clipboard' : 'Copy message to clipboard'}
+            aria-pressed={copied}
             className={cn(
-              'h-6 px-2 opacity-0 group-hover:opacity-100 transition-opacity',
-              'hover:bg-accent text-muted-foreground hover:text-accent-foreground'
+              'h-8 w-8 p-0 rounded-md transition-all duration-200',
+              'text-muted-foreground hover:text-primary hover:bg-primary/10',
+              'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+              copied && 'text-primary bg-primary/10'
             )}
-            tabIndex={0}
-            onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                handleCopyMessage()
-              }
-            }}
           >
             {copied ? (
-              <Check className="size-3" aria-hidden="true" />
+              <Check className="size-4" aria-hidden="true" />
             ) : (
-              <Copy className="size-3" aria-hidden="true" />
+              <Copy className="size-4" aria-hidden="true" />
             )}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>{copied ? 'Copied!' : 'Copy message'}</TooltipContent>
+        <TooltipContent side="top">{copied ? 'Copied!' : 'Copy'}</TooltipContent>
       </Tooltip>
 
-      {/* Edit button - only for assistant messages */}
+      {/* Like button - only for assistant messages */}
       {isAssistant && (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleEditMessage}
-              aria-label="Edit message"
+              onClick={handleLikeMessage}
+              aria-label={liked ? 'Remove like from message' : 'Like this message'}
+              aria-pressed={liked}
               className={cn(
-                'h-6 px-2 opacity-0 group-hover:opacity-100 transition-opacity',
-                'hover:bg-accent text-muted-foreground hover:text-accent-foreground'
+                'h-8 w-8 p-0 rounded-md transition-all duration-200',
+                'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                liked
+                  ? 'text-primary bg-primary/10'
+                  : 'text-muted-foreground hover:text-primary hover:bg-primary/10'
               )}
-              tabIndex={0}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  handleEditMessage()
-                }
-              }}
             >
-              <Edit className="size-3" aria-hidden="true" />
+              <ThumbsUp className={cn('size-4', liked && 'fill-current')} aria-hidden="true" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Edit message</TooltipContent>
+          <TooltipContent side="top">Like</TooltipContent>
         </Tooltip>
       )}
 
-      {/* Regenerate button - only for assistant messages */}
+      {/* Dislike button - only for assistant messages */}
       {isAssistant && (
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleRegenerateMessage}
-              aria-label="Regenerate response"
-              disabled={isRegenerating}
+              onClick={handleDislikeMessage}
+              aria-label={disliked ? 'Remove dislike from message' : 'Dislike this message'}
+              aria-pressed={disliked}
               className={cn(
-                'h-6 px-2 opacity-0 group-hover:opacity-100 transition-opacity',
-                'hover:bg-accent text-muted-foreground hover:text-accent-foreground'
+                'h-8 w-8 p-0 rounded-md transition-all duration-200',
+                'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                disliked
+                  ? 'text-primary bg-primary/10'
+                  : 'text-muted-foreground hover:text-primary hover:bg-primary/10'
               )}
-              tabIndex={0}
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  handleRegenerateMessage()
-                }
-              }}
             >
-              <RefreshCw
-                className={cn('size-3', isRegenerating && 'animate-spin')}
-                aria-hidden="true"
-              />
+              <ThumbsDown className={cn('size-4', disliked && 'fill-current')} aria-hidden="true" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Regenerate response</TooltipContent>
+          <TooltipContent side="top">Dislike</TooltipContent>
         </Tooltip>
       )}
-
-      {/* Delete button - for both user and assistant messages */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDeleteMessage}
-            aria-label="Delete message"
-            className={cn(
-              'h-6 px-2 opacity-0 group-hover:opacity-100 transition-opacity',
-              'hover:bg-destructive hover:text-destructive-foreground text-muted-foreground'
-            )}
-            tabIndex={0}
-            onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
-                handleDeleteMessage()
-              }
-            }}
-          >
-            <Trash2 className="size-3" aria-hidden="true" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Delete message</TooltipContent>
-      </Tooltip>
     </div>
   )
 }

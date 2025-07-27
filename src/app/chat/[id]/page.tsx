@@ -23,10 +23,6 @@ const ConversationPage = () => {
     router.push(`/chat/${selectedConversation.id}`)
   }
 
-  const handleBackClick = () => {
-    router.push('/chat')
-  }
-
   // Handle initial message from URL if present
   useEffect(() => {
     const initialMessage = initialMessageRef.current
@@ -68,7 +64,6 @@ const ConversationPage = () => {
         conversationId={conversationId}
         title={conversation?.title || 'Loading...'}
         showBackButton={true}
-        onBackClick={handleBackClick}
         showModelSelector={true}
       />
     </ChatLayout>

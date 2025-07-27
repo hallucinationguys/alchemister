@@ -1,13 +1,11 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Bot } from 'lucide-react'
 import { ChatLayout } from '@/features/chat/components/layout'
-import { ChatHeader } from '@/features/chat/components/chat'
-import { MessageInput } from '@/features/chat/components/chat'
+import { ChatHeader, ChatOnboarding, MessageInput } from '@/features/chat/components/chat'
 import { SidebarInset } from '@/shared/ui/sidebar'
 import { useProviders } from '@/features/chat/hooks'
-import { useChat, useMessageActions } from '@/features/chat/hooks'
+import { useChat } from '@/features/chat/hooks'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
@@ -71,26 +69,7 @@ const ChatPage = () => {
   const welcomeContent = (
     <div className="flex flex-1 flex-col bg-surface">
       {/* Main Content */}
-      <div className="flex flex-1 items-center justify-center px-6">
-        <div className="w-full max-w-4xl mx-auto text-center space-y-8">
-          {/* AI Assistant Avatar and Greeting */}
-          <div className="space-y-6">
-            <div className="relative mb-8">
-              <div className="flex size-20 mx-auto items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-lg">
-                <Bot className="size-10" />
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <h1 className="text-4xl font-bold text-foreground">Welcome to AI Assistant</h1>
-              <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                I&apos;m here to help you with information, creative tasks, problem-solving, and
-                more. What would you like to explore today?
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ChatOnboarding />
 
       {/* Message Input */}
       <MessageInput

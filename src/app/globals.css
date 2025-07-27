@@ -142,3 +142,123 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer components {
+  /* Enhanced message typography styles */
+  .prose-enhanced table {
+    @apply w-full border-collapse border border-border/50 rounded-lg overflow-hidden mt-3 mb-3;
+  }
+
+  .prose-enhanced th {
+    @apply bg-muted/30 border-b border-border/50 px-3 py-2 text-left font-medium text-foreground;
+  }
+
+  .prose-enhanced td {
+    @apply border-b border-border/30 px-3 py-2 text-foreground;
+  }
+
+  .prose-enhanced tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .prose-enhanced h1,
+  .prose-enhanced h2,
+  .prose-enhanced h3,
+  .prose-enhanced h4,
+  .prose-enhanced h5,
+  .prose-enhanced h6 {
+    @apply text-foreground font-semibold mt-4 mb-2;
+  }
+
+  .prose-enhanced p {
+    @apply text-foreground mb-3 leading-relaxed;
+  }
+
+  .prose-enhanced ul,
+  .prose-enhanced ol {
+    @apply text-foreground mb-3 pl-4;
+  }
+
+  .prose-enhanced li {
+    @apply text-foreground mb-1;
+  }
+
+  .prose-enhanced blockquote {
+    @apply border-l-4 border-border pl-4 italic text-muted-foreground my-3;
+  }
+
+  .prose-enhanced code:not(pre code) {
+    @apply bg-muted/50 text-foreground px-1.5 py-0.5 rounded text-sm font-mono;
+  }
+
+  /* Enhanced prose styling for better readability */
+  .prose-enhanced strong {
+    @apply text-foreground font-semibold;
+  }
+
+  .prose-enhanced em {
+    @apply text-foreground italic;
+  }
+
+  .prose-enhanced a {
+    @apply text-primary hover:text-primary/80 underline;
+  }
+
+  .prose-enhanced pre {
+    @apply bg-muted/20 text-foreground rounded-lg p-3 overflow-x-auto;
+  }
+
+  .prose-enhanced hr {
+    @apply border-border my-4;
+  }
+
+  /* KaTeX Math Styling */
+  .katex {
+    @apply text-foreground;
+  }
+
+  .katex-display {
+    @apply my-4 overflow-x-auto;
+  }
+
+  .katex-inline {
+    @apply mx-0.5;
+  }
+
+  /* Ensure KaTeX elements inherit theme colors */
+  .katex .base,
+  .katex .strut,
+  .katex .mathdefault,
+  .katex .mathit,
+  .katex .mathrm,
+  .katex .mathbf,
+  .katex .mathsf,
+  .katex .mathtt {
+    @apply text-foreground;
+  }
+
+  /* Dark mode adjustments for KaTeX */
+  .dark .katex {
+    @apply text-foreground;
+  }
+
+  .dark .katex .base,
+  .dark .katex .strut,
+  .dark .katex .mathdefault,
+  .dark .katex .mathit,
+  .dark .katex .mathrm,
+  .dark .katex .mathbf,
+  .dark .katex .mathsf,
+  .dark .katex .mathtt {
+    @apply text-foreground;
+  }
+
+  /* Ensure math expressions are properly sized */
+  .katex-display > .katex {
+    @apply text-base;
+  }
+
+  .katex-inline > .katex {
+    @apply text-sm;
+  }
+}
